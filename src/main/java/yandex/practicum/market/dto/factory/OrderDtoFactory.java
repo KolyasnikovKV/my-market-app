@@ -26,7 +26,7 @@ public class OrderDtoFactory {
         OrderDto orderDto = new OrderDto();
         orderDto.setId(order.getId());
 
-        Collection<OrderItemEntity> orderDetails = order.getDetails().values();
+        Collection<OrderItemEntity> orderDetails = order.getItems().values();
         List<ItemDto> items = new ArrayList<>(orderDetails.size());
 
         for (OrderItemEntity orderDetail : orderDetails) {

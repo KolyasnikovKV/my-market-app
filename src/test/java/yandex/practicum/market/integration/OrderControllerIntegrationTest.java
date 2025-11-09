@@ -48,7 +48,7 @@ public class OrderControllerIntegrationTest {
         sessionRepository.save(cart);
 
         CartItemEntity cartDetail = new CartItemEntity(cart, item1, 2, item1.getPrice());
-        cart.getDetails().put(item1, cartDetail);
+        cart.getItems().put(item1, cartDetail);
 
         MockHttpSession mockSession = new MockHttpSession(null, sessionId);
 
@@ -72,14 +72,14 @@ public class OrderControllerIntegrationTest {
 
         OrderEntity order1 = new OrderEntity(cart);
         OrderItemEntity orderDetail1 = new OrderItemEntity(order1, item1, 1, item1.getPrice());
-        order1.getDetails().put(item1, orderDetail1);
+        order1.getItems().put(item1, orderDetail1);
         OrderItemEntity orderDetail2 = new OrderItemEntity(order1, item2, 2, item1.getPrice());
-        order1.getDetails().put(item1, orderDetail2);
+        order1.getItems().put(item1, orderDetail2);
         orderRepository.save(order1);
 
         OrderEntity order2 = new OrderEntity(cart);
         OrderItemEntity orderDetail3 = new OrderItemEntity(order2, item1, 2, item1.getPrice());
-        order2.getDetails().put(item1, orderDetail3);
+        order2.getItems().put(item1, orderDetail3);
         orderRepository.save(order2);
 
         MockHttpSession mockSession = new MockHttpSession(null, sessionId);
@@ -107,9 +107,9 @@ public class OrderControllerIntegrationTest {
 
         OrderEntity order1 = new OrderEntity(cart);
         OrderItemEntity orderDetail1 = new OrderItemEntity(order1, item1, 1, item1.getPrice());
-        order1.getDetails().put(item1, orderDetail1);
+        order1.getItems().put(item1, orderDetail1);
         OrderItemEntity orderDetail2 = new OrderItemEntity(order1, item2, 2, item1.getPrice());
-        order1.getDetails().put(item1, orderDetail2);
+        order1.getItems().put(item1, orderDetail2);
         order1 = orderRepository.save(order1);
         Long orderId = order1.getId();
 

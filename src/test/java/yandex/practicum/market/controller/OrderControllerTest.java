@@ -63,7 +63,7 @@ class OrderControllerTest {
         when(sessionService.getOrCreateSessionById(sessionId)).thenReturn(testCart);
 
         CartItemEntity cartDetail = new CartItemEntity(testCart, testItem, 2, testItem.getPrice());
-        testCart.getDetails().put(testItem, cartDetail);
+        testCart.getItems().put(testItem, cartDetail);
 
         OrderEntity order = new OrderEntity(testCart);
         order.setId(1L);

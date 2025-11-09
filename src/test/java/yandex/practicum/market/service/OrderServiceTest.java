@@ -45,7 +45,7 @@ class OrderServiceTest {
         cartDetails.put(item1, new CartItemEntity(session, item1, 2, new BigDecimal("10.00")));
         cartDetails.put(item2, new CartItemEntity(session, item2, 1, new BigDecimal("20.00")));
 
-        when(session.getDetails()).thenReturn(cartDetails);
+        when(session.getItems()).thenReturn(cartDetails);
 
         OrderEntity expectedOrder = new OrderEntity(session);
         when(orderRepository.save(any(OrderEntity.class))).thenReturn(expectedOrder);
@@ -54,7 +54,7 @@ class OrderServiceTest {
 
         assertNotNull(result);
         assertEquals(session, result.getSession());
-        assertEquals(2, result.getDetails().size());
+        assertEquals(2, result.getItems().size());
         verify(orderRepository, times(1)).save(any(OrderEntity.class));
     }
 

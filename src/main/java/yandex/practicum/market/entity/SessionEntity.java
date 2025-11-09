@@ -23,7 +23,7 @@ public class SessionEntity {
 
     @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
     @MapKey(name = "item")
-    private Map<ItemEntity, CartItemEntity> details = new HashMap<>();
+    private Map<ItemEntity, CartItemEntity> items = new HashMap<>();
 
     public SessionEntity(String sessionId) {
         this.sessionId = sessionId;
@@ -34,8 +34,8 @@ public class SessionEntity {
         this.sessionId = sessionId;
     }
 
-    public Optional<CartItemEntity> getCartDetail(@NonNull ItemEntity item) {
-        CartItemEntity cartDetail = details.get(item);
+    public Optional<CartItemEntity> getCartItem(@NonNull ItemEntity item) {
+        CartItemEntity cartDetail = items.get(item);
 
         return Optional.ofNullable(cartDetail);
     }

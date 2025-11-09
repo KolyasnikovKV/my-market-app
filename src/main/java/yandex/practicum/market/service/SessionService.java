@@ -40,30 +40,30 @@ public class SessionService {
             @NonNull ItemEntity item,
             @NonNull ActionType action
     ) {
-        Optional<CartItemEntity> cartDetailOptional = sessionEntity.getCartDetail(item);
+        Optional<CartItemEntity> cartItemOptional = sessionEntity.getCartItem(item);
 
-        if (cartDetailOptional.isPresent()) {
-            CartItemEntity cartDetail = cartDetailOptional.get();
+        if (cartItemOptional.isPresent()) {
+            CartItemEntity cartItem = cartItemOptional.get();
 
             switch (action) {
                 case PLUS -> {
-                    Integer quantity = cartDetail.getQuantity();
-                    quantity ++;
-                    cartDetail.setQuantity(quantity);
+                    Integer quantity = cartItem.getQuantity();
+                    quantity++;
+                    cartItem.setQuantity(quantity);
                 }
 
                 case MINUS -> {
-                    Integer quantity = cartDetail.getQuantity();
-                    quantity --;
+                    Integer quantity = cartItem.getQuantity();
+                    quantity--;
                     if (quantity > 0) {
-                        cartDetail.setQuantity(quantity);
+                        cartItem.setQuantity(quantity);
                     } else {
-                        sessionEntity.getDetails().remove(item);
+                        sessionEntity.getItems().remove(item);
                     }
                 }
 
                 case DELETE -> {
-                    sessionEntity.getDetails().remove(item);
+                    sessionEntity.getItems().remove(item);
                 }
             }
             sessionRepository.save(sessionEntity);
@@ -72,7 +72,7 @@ public class SessionService {
                 Integer quantity = 1;
                 BigDecimal price = item.getPrice();
                 CartItemEntity cartDetail = new CartItemEntity(sessionEntity, item, quantity, price);
-                sessionEntity.getDetails().put(item, cartDetail);
+                sessionEntity.getItems().put(item, cartDetail);
                 sessionRepository.save(sessionEntity);
             }
         }

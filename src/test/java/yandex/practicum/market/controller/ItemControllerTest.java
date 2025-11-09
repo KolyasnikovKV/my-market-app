@@ -73,8 +73,8 @@ public class ItemControllerTest {
         CartItemEntity cartDetail1 = new CartItemEntity(cart, item1, 1, item1.getPrice());
         CartItemEntity cartDetail2 = new CartItemEntity(cart, item2, 2, item2.getPrice());
 
-        cart.getDetails().put(item1, cartDetail1);
-        cart.getDetails().put(item2, cartDetail2);
+        cart.getItems().put(item1, cartDetail1);
+        cart.getItems().put(item2, cartDetail2);
 
         when(itemService.getItems(anyString(), any(Pageable.class))).thenReturn(page);
         when(session.getId()).thenReturn(sessionId);

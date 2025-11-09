@@ -57,7 +57,7 @@ public class CartControllerTest {
         when(sessionService.getOrCreateSessionById(sessionId)).thenReturn(testSession);
 
         CartItemEntity cartDetail = new CartItemEntity(testSession, testItem, 2, testItem.getPrice());
-        testSession.getDetails().put(testItem, cartDetail);
+        testSession.getItems().put(testItem, cartDetail);
 
         when(sessionService.getCartTotalCostBySessionId(testSession.getId())).thenReturn(BigDecimal.valueOf(2));
 

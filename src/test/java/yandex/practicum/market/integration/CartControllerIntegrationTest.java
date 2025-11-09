@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.annotation.Commit;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,9 +59,9 @@ public class CartControllerIntegrationTest {
         cartDetail1 = new CartItemEntity(cart, item1, 1, item1.getPrice());
         cartDetail2 = new CartItemEntity(cart, item2, 2, item2.getPrice());
 
-        cart.getDetails().put(item1, cartDetail1);
+        cart.getItems().put(item1, cartDetail1);
         sessionRepository.save(cart);
-        cart.getDetails().put(item2, cartDetail2);
+        cart.getItems().put(item2, cartDetail2);
         sessionRepository.save(cart);
 
         // Подготовка данных корзины
@@ -100,7 +101,7 @@ public class CartControllerIntegrationTest {
         sessionRepository.save(cart);
 
         cartDetail1 = new CartItemEntity(cart, item1, 1, item1.getPrice());
-        cart.getDetails().put(item1, cartDetail1);
+        cart.getItems().put(item1, cartDetail1);
         sessionRepository.save(cart);
 
         MockHttpSession mockSession = new MockHttpSession(null, sessionId);
@@ -123,7 +124,7 @@ public class CartControllerIntegrationTest {
         sessionRepository.save(cart);
 
         cartDetail1 = new CartItemEntity(cart, item1, 1, item1.getPrice());
-        cart.getDetails().put(item1, cartDetail1);
+        cart.getItems().put(item1, cartDetail1);
         sessionRepository.save(cart);
 
         MockHttpSession mockSession = new MockHttpSession(null, sessionId);
@@ -147,7 +148,7 @@ public class CartControllerIntegrationTest {
         sessionRepository.save(cart);
 
         cartDetail1 = new CartItemEntity(cart, item1, 1, item1.getPrice());
-        cart.getDetails().put(item1, cartDetail1);
+        cart.getItems().put(item1, cartDetail1);
         sessionRepository.save(cart);
 
         MockHttpSession mockSession = new MockHttpSession(null, sessionId);

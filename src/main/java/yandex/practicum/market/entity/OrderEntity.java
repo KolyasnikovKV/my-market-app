@@ -22,12 +22,12 @@ public class OrderEntity {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @MapKey(name = "item")
-    private Map<ItemEntity, OrderItemEntity> details = new HashMap<>();
+    private Map<ItemEntity, OrderItemEntity> items = new HashMap<>();
 
     public OrderEntity(@NonNull SessionEntity sessionEntity) {
         this.session = sessionEntity;
 
-        Collection<CartItemEntity> cartDetails = sessionEntity.getDetails().values();
+        Collection<CartItemEntity> cartDetails = sessionEntity.getItems().values();
 
         for (CartItemEntity cartDetail : cartDetails) {
             ItemEntity item = cartDetail.getItem();
@@ -35,7 +35,7 @@ public class OrderEntity {
             BigDecimal price = cartDetail.getPrice();
 
             OrderItemEntity orderDetail = new OrderItemEntity(this, item, quantity, price);
-            details.put(item, orderDetail);
+            items.put(item, orderDetail);
         }
     }
 }

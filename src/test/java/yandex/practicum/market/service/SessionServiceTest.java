@@ -62,7 +62,7 @@ class SessionServiceTest {
         SessionEntity cart = new SessionEntity(1L, "1");
         ItemEntity item = new ItemEntity(1L, "title1", "desc1", "img1.jpg", BigDecimal.TEN);
         CartItemEntity cartDetail = new CartItemEntity(cart, item, 1, BigDecimal.TEN);
-        cart.getDetails().put(item, cartDetail);
+        cart.getItems().put(item, cartDetail);
 
         when(sessionRepository.save(cart)).thenReturn(cart);
 
@@ -80,7 +80,7 @@ class SessionServiceTest {
         SessionEntity cart = new SessionEntity(1L, "1");
         ItemEntity item = new ItemEntity(1L, "title1", "desc1", "img1.jpg", BigDecimal.TEN);
         CartItemEntity cartDetail = new CartItemEntity(cart, item, 2, BigDecimal.TEN);
-        cart.getDetails().put(item, cartDetail);
+        cart.getItems().put(item, cartDetail);
 
         when(sessionRepository.save(cart)).thenReturn(cart);
 
@@ -98,7 +98,7 @@ class SessionServiceTest {
         SessionEntity cart = new SessionEntity(1L, "1");
         ItemEntity item = new ItemEntity(1L, "title1", "desc1", "img1.jpg", BigDecimal.TEN);
         CartItemEntity cartDetail = new CartItemEntity(cart, item, 1, BigDecimal.TEN);
-        cart.getDetails().put(item, cartDetail);
+        cart.getItems().put(item, cartDetail);
 
         when(sessionRepository.save(cart)).thenReturn(cart);
 
@@ -106,7 +106,7 @@ class SessionServiceTest {
         sessionService.updateCart(cart, item, ActionType.MINUS);
 
         // Assert
-        assertFalse(cart.getDetails().containsKey(item));
+        assertFalse(cart.getItems().containsKey(item));
         verify(sessionRepository, times(1)).save(cart);
     }
 
@@ -116,7 +116,7 @@ class SessionServiceTest {
         SessionEntity cart = new SessionEntity(1L, "1");
         ItemEntity item = new ItemEntity(1L, "title1", "desc1", "img1.jpg", BigDecimal.TEN);
         CartItemEntity cartDetail = new CartItemEntity(cart, item, 2, BigDecimal.TEN);
-        cart.getDetails().put(item, cartDetail);
+        cart.getItems().put(item, cartDetail);
 
         when(sessionRepository.save(cart)).thenReturn(cart);
 
@@ -124,7 +124,7 @@ class SessionServiceTest {
         sessionService.updateCart(cart, item, ActionType.DELETE);
 
         // Assert
-        assertFalse(cart.getDetails().containsKey(item));
+        assertFalse(cart.getItems().containsKey(item));
         verify(sessionRepository, times(1)).save(cart);
     }
 
@@ -140,8 +140,8 @@ class SessionServiceTest {
         sessionService.updateCart(cart, item, ActionType.PLUS);
 
         // Assert
-        assertTrue(cart.getDetails().containsKey(item));
-        assertEquals(1, cart.getDetails().get(item).getQuantity());
+        assertTrue(cart.getItems().containsKey(item));
+        assertEquals(1, cart.getItems().get(item).getQuantity());
         verify(sessionRepository, times(1)).save(cart);
     }
 

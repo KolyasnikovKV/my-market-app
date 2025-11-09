@@ -77,8 +77,8 @@ class OrderRepositoryTest {
 
         CartItemEntity detail1 = new CartItemEntity(cart, item1, 1, item1.getPrice());
         CartItemEntity detail2 = new CartItemEntity(cart, item2, 2, item2.getPrice());
-        cart.getDetails().put(item1, detail1);
-        cart.getDetails().put(item2, detail2);
+        cart.getItems().put(item1, detail1);
+        cart.getItems().put(item2, detail2);
         entityManager.persist(cart);
 
         // Act
@@ -88,7 +88,7 @@ class OrderRepositoryTest {
         // Assert
         assertNotNull(savedOrder.getId());
         assertEquals(cart.getId(), savedOrder.getSession().getId());
-        assertEquals(2, savedOrder.getDetails().size());
+        assertEquals(2, savedOrder.getItems().size());
     }
 
     @Test
@@ -101,7 +101,7 @@ class OrderRepositoryTest {
         entityManager.persist(item);
 
         CartItemEntity cartDetail = new CartItemEntity(cart, item, 1, item.getPrice());
-        cart.getDetails().put(item, cartDetail);
+        cart.getItems().put(item, cartDetail);
         entityManager.persist(cart);
 
         // Act
@@ -112,7 +112,7 @@ class OrderRepositoryTest {
 
         // Assert
         OrderEntity foundOrder = entityManager.find(OrderEntity.class, savedOrder.getId());
-        assertEquals(1, foundOrder.getDetails().size());
+        assertEquals(1, foundOrder.getItems().size());
     }
 
     @Test

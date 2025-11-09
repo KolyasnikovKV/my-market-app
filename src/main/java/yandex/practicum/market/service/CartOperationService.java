@@ -39,12 +39,12 @@ public class CartOperationService {
     }
 
     public List<ItemDto> getItemDtos(SessionEntity sessionEntity) {
-        Collection<CartItemEntity> cartDetails = sessionEntity.getDetails().values();
+        Collection<CartItemEntity> cartItemEntities = sessionEntity.getItems().values();
 
-        List<ItemDto> items = new ArrayList<>(cartDetails.size());
-        for(CartItemEntity cartDetail : cartDetails) {
-            ItemEntity item = cartDetail.getItem();
-            Integer quantity = cartDetail.getQuantity();
+        List<ItemDto> items = new ArrayList<>(cartItemEntities.size());
+        for(CartItemEntity cartItem : cartItemEntities) {
+            ItemEntity item = cartItem.getItem();
+            Integer quantity = cartItem.getQuantity();
             ItemDto itemDto = itemDtoFactory.of(item, quantity);
             items.add(itemDto);
         }

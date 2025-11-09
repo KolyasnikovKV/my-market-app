@@ -111,14 +111,14 @@ class SessionRepositoryTest {
 
         SessionEntity sessionEntity = new SessionEntity("1");
         CartItemEntity detail = new CartItemEntity(sessionEntity, item, 1, BigDecimal.ONE);
-        sessionEntity.getDetails().put(item, detail);
+        sessionEntity.getItems().put(item, detail);
 
         // Act
         SessionEntity savedSessionEntity = sessionRepository.save(sessionEntity);
 
         // Assert
         assertNotNull(savedSessionEntity.getId());
-        assertEquals(1, savedSessionEntity.getDetails().size());
+        assertEquals(1, savedSessionEntity.getItems().size());
     }
 
 }

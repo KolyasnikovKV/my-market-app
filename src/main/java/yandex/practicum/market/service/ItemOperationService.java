@@ -45,10 +45,10 @@ public class ItemOperationService {
 
         for (ItemEntity item : items) {
             Integer quantity = 0;
-            Optional<CartItemEntity> cartDetailOptional = cart.getCartDetail(item);
-            if (cartDetailOptional.isPresent()) {
-                CartItemEntity cartDetail = cartDetailOptional.get();
-                quantity = cartDetail.getQuantity();
+            Optional<CartItemEntity> cartItemOptional = cart.getCartItem(item);
+            if (cartItemOptional.isPresent()) {
+                CartItemEntity cartItem = cartItemOptional.get();
+                quantity = cartItem.getQuantity();
             }
             ItemDto itemDto = itemDtoFactory.of(item, quantity);
             listItemDto.add(itemDto);
@@ -66,12 +66,12 @@ public class ItemOperationService {
     public ItemDto getItem(Long id, String sessionId) {
         ItemEntity item = itemService.getItem(id);
         SessionEntity sessionEntity = sessionService.getOrCreateSessionById(sessionId);
-        Optional<CartItemEntity> cartDetailOptional = sessionEntity.getCartDetail(item);
+        Optional<CartItemEntity> cartItemOptional = sessionEntity.getCartItem(item);
 
         Integer quantity = 0;
-        if (cartDetailOptional.isPresent()) {
-            CartItemEntity cartDetail = cartDetailOptional.get();
-            quantity = cartDetail.getQuantity();
+        if (cartItemOptional.isPresent()) {
+            CartItemEntity cartItem = cartItemOptional.get();
+            quantity = cartItem.getQuantity();
         }
 
         ItemDto itemDto = itemDtoFactory.of(item, quantity);
