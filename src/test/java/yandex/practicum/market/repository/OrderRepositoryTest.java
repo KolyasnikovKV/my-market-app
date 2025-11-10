@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
-import yandex.practicum.market.entity.SessionEntity;
+import yandex.practicum.market.entity.CartEntity;
 import yandex.practicum.market.entity.CartItemEntity;
 import yandex.practicum.market.entity.ItemEntity;
 import yandex.practicum.market.entity.OrderEntity;
@@ -30,10 +30,10 @@ class OrderRepositoryTest {
     @Transactional
     void findByCartId_shouldReturnOrdersForSession() {
         // Arrange
-        SessionEntity cart1 = new SessionEntity("1");
-        SessionEntity cart2 = new SessionEntity("2");
-        SessionEntity savedCart1 = entityManager.persist(cart1);
-        SessionEntity savedCart2 = entityManager.persist(cart2);
+        CartEntity cart1 = new CartEntity("1");
+        CartEntity cart2 = new CartEntity("2");
+        CartEntity savedCart1 = entityManager.persist(cart1);
+        CartEntity savedCart2 = entityManager.persist(cart2);
 
         OrderEntity order1 = new OrderEntity(savedCart1);
         OrderEntity order2 = new OrderEntity(savedCart1); // Два заказа для cart1
@@ -67,7 +67,7 @@ class OrderRepositoryTest {
     @Transactional
     void shouldPersistOrderWithDetails() {
         // Arrange
-        SessionEntity cart = new SessionEntity("1");
+        CartEntity cart = new CartEntity("1");
         ItemEntity item1 = new ItemEntity("title1", "desc1", "img1.jpg", BigDecimal.ONE);
         ItemEntity item2 = new ItemEntity("title2", "desc2", "img2.jpg", BigDecimal.TWO);
 
@@ -95,7 +95,7 @@ class OrderRepositoryTest {
     @Transactional
     void shouldCascadePersistOrderDetails() {
         // Arrange
-        SessionEntity cart = new SessionEntity("1");
+        CartEntity cart = new CartEntity("1");
         ItemEntity item = new ItemEntity("title", "desc1", "img1.jpg", BigDecimal.ONE);
         entityManager.persist(cart);
         entityManager.persist(item);

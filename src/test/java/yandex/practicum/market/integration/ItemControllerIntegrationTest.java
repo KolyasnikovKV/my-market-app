@@ -8,9 +8,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import yandex.practicum.market.entity.SessionEntity;
+import yandex.practicum.market.entity.CartEntity;
 import yandex.practicum.market.entity.ItemEntity;
-import yandex.practicum.market.repository.SessionRepository;
+import yandex.practicum.market.repository.CartRepository;
 import yandex.practicum.market.repository.ItemRepository;
 
 import java.math.BigDecimal;
@@ -33,7 +33,7 @@ public class ItemControllerIntegrationTest {
     private ItemRepository itemRepository;
 
     @Autowired
-    private SessionRepository sessionRepository;
+    private CartRepository cartRepository;
 
     private ItemEntity item1;
     private ItemEntity item2;
@@ -49,8 +49,8 @@ public class ItemControllerIntegrationTest {
         item2 = itemRepository.save(item2);
 
         String sessionId = "1";
-        SessionEntity cart = new SessionEntity(sessionId);
-        sessionRepository.save(cart);
+        CartEntity cart = new CartEntity(sessionId);
+        cartRepository.save(cart);
 
         MockHttpSession mockSession = new MockHttpSession(null, sessionId);
 
@@ -77,8 +77,8 @@ public class ItemControllerIntegrationTest {
         Long itemId = item1.getId();
 
                 String sessionId = "1";
-        SessionEntity cart = new SessionEntity(sessionId);
-        sessionRepository.save(cart);
+        CartEntity cart = new CartEntity(sessionId);
+        cartRepository.save(cart);
 
         MockHttpSession mockSession = new MockHttpSession(null, sessionId);
 
@@ -93,8 +93,8 @@ public class ItemControllerIntegrationTest {
     @Transactional
     public void showItem_ShouldReturnNotFound_WhenItemDoesNotExist() throws Exception {
         String sessionId = "1";
-        SessionEntity cart = new SessionEntity(sessionId);
-        sessionRepository.save(cart);
+        CartEntity cart = new CartEntity(sessionId);
+        cartRepository.save(cart);
 
         MockHttpSession mockSession = new MockHttpSession(null, sessionId);
 

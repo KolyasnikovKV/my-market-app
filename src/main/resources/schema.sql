@@ -2,7 +2,7 @@
 DROP TABLE IF EXISTS order_details;
 DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS cart_details;
-DROP TABLE IF EXISTS sessions;
+DROP TABLE IF EXISTS carts;
 DROP TABLE IF EXISTS items;
 
 -- Таблица товаров
@@ -15,7 +15,7 @@ CREATE TABLE items (
 );
 
 -- Таблица сессий
-CREATE TABLE sessions (
+CREATE TABLE carts (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     session_id VARCHAR(64) UNIQUE
 );
@@ -28,7 +28,7 @@ CREATE TABLE cart_details (
     price DECIMAL(10,2) NOT NULL DEFAULT 0.0 CHECK (price >= 0.0),
 
     PRIMARY KEY (session_id, item_id),
-    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
+    FOREIGN KEY (session_id) REFERENCES carts(id) ON DELETE CASCADE,
     FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE RESTRICT
 );
 
@@ -37,8 +37,10 @@ CREATE TABLE orders (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     session_id BIGINT NOT NULL,
 
-    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE RESTRICT
+    FOREIGN KEY (session_id) REFERENCES carts(id) ON DELETE RESTRICT
 );
+
+CREATE INDEX idx_session_id ON orders(session_id);
 
 -- Таблица деталей заказов
 CREATE TABLE order_details (
@@ -52,3 +54,6 @@ CREATE TABLE order_details (
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
     FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE RESTRICT
 );
+
+CREATE INDEX idx_order_id ON order_details(order_id);
+CREATE INDEX idx_item_id ON order_details(item_id);

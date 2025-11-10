@@ -5,14 +5,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.annotation.Commit;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import yandex.practicum.market.entity.SessionEntity;
+import yandex.practicum.market.entity.CartEntity;
 import yandex.practicum.market.entity.CartItemEntity;
 import yandex.practicum.market.entity.ItemEntity;
-import yandex.practicum.market.repository.SessionRepository;
+import yandex.practicum.market.repository.CartRepository;
 import yandex.practicum.market.repository.ItemRepository;
 
 import java.math.BigDecimal;
@@ -34,13 +33,13 @@ public class CartControllerIntegrationTest {
     private ItemRepository itemRepository;
 
     @Autowired
-    private SessionRepository sessionRepository;
+    private CartRepository cartRepository;
 
     private ItemEntity item1;
     private ItemEntity item2;
     private CartItemEntity cartDetail1;
     private CartItemEntity cartDetail2;
-    private SessionEntity cart;
+    private CartEntity cart;
     private String sessionId = "1";
 
 
@@ -53,16 +52,16 @@ public class CartControllerIntegrationTest {
         item1 = itemRepository.save(item1);
         item2 = itemRepository.save(item2);
 
-        cart = new SessionEntity(sessionId);
-        sessionRepository.save(cart);
+        cart = new CartEntity(sessionId);
+        cartRepository.save(cart);
 
         cartDetail1 = new CartItemEntity(cart, item1, 1, item1.getPrice());
         cartDetail2 = new CartItemEntity(cart, item2, 2, item2.getPrice());
 
         cart.getItems().put(item1, cartDetail1);
-        sessionRepository.save(cart);
+        cartRepository.save(cart);
         cart.getItems().put(item2, cartDetail2);
-        sessionRepository.save(cart);
+        cartRepository.save(cart);
 
         // Подготовка данных корзины
         MockHttpSession mockSession = new MockHttpSession(null, sessionId);
@@ -79,8 +78,8 @@ public class CartControllerIntegrationTest {
     @Test
     @Transactional
     void showCart_shouldReturnEmptyCart() throws Exception {
-        cart = new SessionEntity(sessionId);
-        sessionRepository.save(cart);
+        cart = new CartEntity(sessionId);
+        cartRepository.save(cart);
 
         MockHttpSession mockSession = new MockHttpSession(null, sessionId);
 
@@ -97,12 +96,12 @@ public class CartControllerIntegrationTest {
         item1 = itemRepository.save(item1);
         Long itemId = item1.getId();
 
-        cart = new SessionEntity(sessionId);
-        sessionRepository.save(cart);
+        cart = new CartEntity(sessionId);
+        cartRepository.save(cart);
 
         cartDetail1 = new CartItemEntity(cart, item1, 1, item1.getPrice());
         cart.getItems().put(item1, cartDetail1);
-        sessionRepository.save(cart);
+        cartRepository.save(cart);
 
         MockHttpSession mockSession = new MockHttpSession(null, sessionId);
 
@@ -120,12 +119,12 @@ public class CartControllerIntegrationTest {
         item1 = itemRepository.save(item1);
         Long itemId = item1.getId();
 
-        cart = new SessionEntity(sessionId);
-        sessionRepository.save(cart);
+        cart = new CartEntity(sessionId);
+        cartRepository.save(cart);
 
         cartDetail1 = new CartItemEntity(cart, item1, 1, item1.getPrice());
         cart.getItems().put(item1, cartDetail1);
-        sessionRepository.save(cart);
+        cartRepository.save(cart);
 
         MockHttpSession mockSession = new MockHttpSession(null, sessionId);
 
@@ -144,12 +143,12 @@ public class CartControllerIntegrationTest {
         item1 = itemRepository.save(item1);
         Long itemId = item1.getId();
 
-        cart = new SessionEntity(sessionId);
-        sessionRepository.save(cart);
+        cart = new CartEntity(sessionId);
+        cartRepository.save(cart);
 
         cartDetail1 = new CartItemEntity(cart, item1, 1, item1.getPrice());
         cart.getItems().put(item1, cartDetail1);
-        sessionRepository.save(cart);
+        cartRepository.save(cart);
 
         MockHttpSession mockSession = new MockHttpSession(null, sessionId);
 
@@ -163,8 +162,8 @@ public class CartControllerIntegrationTest {
     @Test
     @Transactional
     void updateCart_shouldThrowExceptionWhenItemNotFound() throws Exception {
-        cart = new SessionEntity(sessionId);
-        sessionRepository.save(cart);
+        cart = new CartEntity(sessionId);
+        cartRepository.save(cart);
 
         MockHttpSession mockSession = new MockHttpSession(null, sessionId);
 

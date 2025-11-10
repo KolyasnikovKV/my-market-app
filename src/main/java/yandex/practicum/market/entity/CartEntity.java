@@ -9,11 +9,11 @@ import org.springframework.lang.NonNull;
 import java.util.*;
 
 @Entity
-@Table(name = "sessions")
+@Table(name = "carts")
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode
-public class SessionEntity {
+public class CartEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,11 +25,11 @@ public class SessionEntity {
     @MapKey(name = "item")
     private Map<ItemEntity, CartItemEntity> items = new HashMap<>();
 
-    public SessionEntity(String sessionId) {
+    public CartEntity(String sessionId) {
         this.sessionId = sessionId;
     }
 
-    public SessionEntity(Long id, String sessionId) {
+    public CartEntity(Long id, String sessionId) {
         this.id = id;
         this.sessionId = sessionId;
     }

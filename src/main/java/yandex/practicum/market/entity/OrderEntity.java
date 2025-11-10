@@ -18,16 +18,16 @@ public class OrderEntity {
 
     @OneToOne
     @JoinColumn(name = "session_id", nullable = false)
-    private SessionEntity session;
+    private CartEntity session;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @MapKey(name = "item")
     private Map<ItemEntity, OrderItemEntity> items = new HashMap<>();
 
-    public OrderEntity(@NonNull SessionEntity sessionEntity) {
-        this.session = sessionEntity;
+    public OrderEntity(@NonNull CartEntity cartEntity) {
+        this.session = cartEntity;
 
-        Collection<CartItemEntity> cartDetails = sessionEntity.getItems().values();
+        Collection<CartItemEntity> cartDetails = cartEntity.getItems().values();
 
         for (CartItemEntity cartDetail : cartDetails) {
             ItemEntity item = cartDetail.getItem();

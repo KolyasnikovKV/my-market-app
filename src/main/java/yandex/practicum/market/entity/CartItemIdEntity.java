@@ -13,7 +13,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-public class CartItemlIdEntity implements Serializable {
-    private Long SessionId;
+public class CartItemIdEntity implements Serializable {
+    private Long cartId;
     private Long itemId;
 }

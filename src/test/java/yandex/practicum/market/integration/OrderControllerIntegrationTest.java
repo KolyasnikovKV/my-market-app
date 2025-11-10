@@ -10,7 +10,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import yandex.practicum.market.entity.*;
-import yandex.practicum.market.repository.SessionRepository;
+import yandex.practicum.market.repository.CartRepository;
 import yandex.practicum.market.repository.ItemRepository;
 import yandex.practicum.market.repository.OrderRepository;
 
@@ -31,7 +31,7 @@ public class OrderControllerIntegrationTest {
     private ItemRepository itemRepository;
 
     @Autowired
-    private SessionRepository sessionRepository;
+    private CartRepository cartRepository;
 
     @Autowired
     private OrderRepository orderRepository;
@@ -44,8 +44,8 @@ public class OrderControllerIntegrationTest {
         String sessionId = "11";
         ItemEntity item1 = new ItemEntity("Item 1", "Desc 1", "img1.jpg", BigDecimal.ONE);
         itemRepository.save(item1);
-        SessionEntity cart = new SessionEntity(sessionId);
-        sessionRepository.save(cart);
+        CartEntity cart = new CartEntity(sessionId);
+        cartRepository.save(cart);
 
         CartItemEntity cartDetail = new CartItemEntity(cart, item1, 2, item1.getPrice());
         cart.getItems().put(item1, cartDetail);
@@ -67,8 +67,8 @@ public class OrderControllerIntegrationTest {
         itemRepository.save(item2);
 
         // Arrange
-        SessionEntity cart = new SessionEntity(sessionId);
-        sessionRepository.save(cart);
+        CartEntity cart = new CartEntity(sessionId);
+        cartRepository.save(cart);
 
         OrderEntity order1 = new OrderEntity(cart);
         OrderItemEntity orderDetail1 = new OrderItemEntity(order1, item1, 1, item1.getPrice());
@@ -102,8 +102,8 @@ public class OrderControllerIntegrationTest {
         itemRepository.save(item2);
 
         // Arrange
-        SessionEntity cart = new SessionEntity(sessionId);
-        sessionRepository.save(cart);
+        CartEntity cart = new CartEntity(sessionId);
+        cartRepository.save(cart);
 
         OrderEntity order1 = new OrderEntity(cart);
         OrderItemEntity orderDetail1 = new OrderItemEntity(order1, item1, 1, item1.getPrice());
@@ -130,8 +130,8 @@ public class OrderControllerIntegrationTest {
     void showOrder_ShouldThrowNoSuchElementException_WhenOrderNotFound() throws Exception {
         // Arrange
         String sessionId = "14";
-        SessionEntity cart = new SessionEntity(sessionId);
-        sessionRepository.save(cart);
+        CartEntity cart = new CartEntity(sessionId);
+        cartRepository.save(cart);
 
         // Act & Assert
         MockHttpSession mockSession = new MockHttpSession(null, sessionId);

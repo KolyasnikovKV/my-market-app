@@ -1,4 +1,0 @@
---INSERT INTO items (title, description, img_path, price)
---VALUES
---('item1', 'description 1', 'img1.jpg', 79999.00),
---('item2', 'description 2', 'img2.jpg', 14990.00);

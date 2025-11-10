@@ -11,6 +11,4 @@ public class MainController {
     public String redirectToMain() {
         return "redirect:/items";
     }
-
-
 }

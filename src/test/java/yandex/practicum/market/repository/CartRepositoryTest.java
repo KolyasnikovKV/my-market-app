@@ -7,7 +7,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
-import yandex.practicum.market.entity.SessionEntity;
+import yandex.practicum.market.entity.CartEntity;
 import yandex.practicum.market.entity.CartItemEntity;
 import yandex.practicum.market.entity.ItemEntity;
 
@@ -18,9 +18,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @ActiveProfiles("test")
-class SessionRepositoryTest {
+class CartRepositoryTest {
     @Autowired
-    private SessionRepository sessionRepository;
+    private CartRepository cartRepository;
 
     @Autowired
     private TestEntityManager entityManager;
@@ -30,11 +30,11 @@ class SessionRepositoryTest {
     void findBySessionId_shouldReturnSessionWhenExists() {
         // Arrange
         String sessionId = "1";
-        SessionEntity sessionEntity = new SessionEntity(sessionId);
-        sessionRepository.save(sessionEntity);
+        CartEntity cartEntity = new CartEntity(sessionId);
+        cartRepository.save(cartEntity);
 
         // Act
-        Optional<SessionEntity> foundSessionEntity = sessionRepository.findBySessionId(sessionId);
+        Optional<CartEntity> foundSessionEntity = cartRepository.findBySessionId(sessionId);
 
         // Assert
         assertTrue(foundSessionEntity.isPresent());
@@ -44,7 +44,7 @@ class SessionRepositoryTest {
     @Test
     void findBySessionId_shouldReturnEmptyWhenNotExists() {
         // Act
-        Optional<SessionEntity> foundSession = sessionRepository.findBySessionId("0");
+        Optional<CartEntity> foundSession = cartRepository.findBySessionId("0");
 
         // Assert
         assertFalse(foundSession.isPresent());
@@ -55,37 +55,37 @@ class SessionRepositoryTest {
     void shouldSaveSessionWithSessionId() {
         // Arrange
         String sessionId = "1";
-        SessionEntity newSessionEntity = new SessionEntity(sessionId);
+        CartEntity newCartEntity = new CartEntity(sessionId);
 
         // Act
-        SessionEntity savedSessionEntity = sessionRepository.save(newSessionEntity);
+        CartEntity savedCartEntity = cartRepository.save(newCartEntity);
 
         // Assert
-        assertNotNull(savedSessionEntity.getId());
-        assertEquals(sessionId, savedSessionEntity.getSessionId());
+        assertNotNull(savedCartEntity.getId());
+        assertEquals(sessionId, savedCartEntity.getSessionId());
     }
 
     @Test
     @Transactional
     void shouldGenerateIdAutomatically() {
         // Arrange
-        SessionEntity sessionEntity = new SessionEntity("1");
+        CartEntity cartEntity = new CartEntity("1");
 
         // Act
-        SessionEntity savedSessionEntity1 = sessionRepository.save(sessionEntity);
+        CartEntity savedCartEntity1 = cartRepository.save(cartEntity);
 
         // Assert
-        assertNotNull(savedSessionEntity1.getId());
+        assertNotNull(savedCartEntity1.getId());
     }
 
     @Test
     void shouldNotAllowNullSessionId() {
         // Arrange
-        SessionEntity sessionWithNullSessionId = new SessionEntity();
+        CartEntity sessionWithNullSessionId = new CartEntity();
 
         // Act & Assert
         assertThrows(DataIntegrityViolationException.class, () -> {
-            sessionRepository.saveAndFlush(sessionWithNullSessionId);
+            cartRepository.saveAndFlush(sessionWithNullSessionId);
         });
     }
 
@@ -94,11 +94,11 @@ class SessionRepositoryTest {
     void shouldNotAllowDuplicateSessionIds() {
         // Arrange
         String duplicateSessionId = "1";
-        sessionRepository.save(new SessionEntity(duplicateSessionId));
+        cartRepository.save(new CartEntity(duplicateSessionId));
 
         // Act & Assert
         assertThrows(DataIntegrityViolationException.class, () -> {
-            sessionRepository.save(new SessionEntity(duplicateSessionId));
+            cartRepository.save(new CartEntity(duplicateSessionId));
         });
     }
 
@@ -109,16 +109,16 @@ class SessionRepositoryTest {
         ItemEntity item = new ItemEntity("title1", "desc1", "img1.jpg", BigDecimal.ONE);
         entityManager.persist(item);
 
-        SessionEntity sessionEntity = new SessionEntity("1");
-        CartItemEntity detail = new CartItemEntity(sessionEntity, item, 1, BigDecimal.ONE);
-        sessionEntity.getItems().put(item, detail);
+        CartEntity cartEntity = new CartEntity("1");
+        CartItemEntity detail = new CartItemEntity(cartEntity, item, 1, BigDecimal.ONE);
+        cartEntity.getItems().put(item, detail);
 
         // Act
-        SessionEntity savedSessionEntity = sessionRepository.save(sessionEntity);
+        CartEntity savedCartEntity = cartRepository.save(cartEntity);
 
         // Assert
-        assertNotNull(savedSessionEntity.getId());
-        assertEquals(1, savedSessionEntity.getItems().size());
+        assertNotNull(savedCartEntity.getId());
+        assertEquals(1, savedCartEntity.getItems().size());
     }
 
 }

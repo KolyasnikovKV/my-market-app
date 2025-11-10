@@ -8,11 +8,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import yandex.practicum.market.entity.SessionEntity;
+import yandex.practicum.market.entity.CartEntity;
 import yandex.practicum.market.dto.ItemDto;
 import yandex.practicum.market.service.CartOperationService;
 import yandex.practicum.market.types.ActionType;
-import yandex.practicum.market.service.SessionService;
+import yandex.practicum.market.service.CartService;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -22,20 +22,20 @@ import yandex.practicum.market.types.SortType;
 @Controller
 public class CartController {
 
-    private final SessionService sessionService;
+    private final CartService cartService;
     private final CartOperationService cartOperationService;
 
-    public CartController(SessionService sessionService, CartOperationService cartOperationService) {
-        this.sessionService = sessionService;
+    public CartController(CartService cartService, CartOperationService cartOperationService) {
+        this.cartService = cartService;
         this.cartOperationService = cartOperationService;
     }
 
     @GetMapping("/cart/items")
     public String showCart(Model model, HttpSession session) {
         String sessionId = session.getId();
-        SessionEntity sessionEntity = sessionService.getOrCreateSessionById(sessionId);
-        List<ItemDto> items = cartOperationService.getItemDtos(sessionEntity);
-        BigDecimal totalCost = sessionService.getCartTotalCostBySessionId(sessionEntity.getId());
+        CartEntity cartEntity = cartService.getOrCreateSessionById(sessionId);
+        List<ItemDto> items = cartOperationService.getItemDtos(cartEntity);
+        BigDecimal totalCost = cartService.getCartTotalCostBySessionId(cartEntity.getId());
 
         model.addAttribute("items", items);
         model.addAttribute("total", totalCost);
@@ -86,10 +86,5 @@ public class CartController {
         cartOperationService.updateCart(sessionId, id, action);
 
         return "redirect:/items/" + id;
-    }
-
-    @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<String> handleNoSuchElement(NoSuchElementException e) {
-        return ResponseEntity.notFound().build();
     }
 }

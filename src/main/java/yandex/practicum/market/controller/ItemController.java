@@ -68,9 +68,4 @@ public class ItemController {
 
         return "item";
     }
-
-    @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<String> handleNoSuchElement(NoSuchElementException e) {
-        return ResponseEntity.notFound().build();
-    }
 }

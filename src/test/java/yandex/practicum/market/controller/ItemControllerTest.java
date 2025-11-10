@@ -29,12 +29,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.springframework.ui.Model;
 import yandex.practicum.market.dto.factory.ItemDtoFactory;
-import yandex.practicum.market.entity.SessionEntity;
+import yandex.practicum.market.entity.CartEntity;
 import yandex.practicum.market.entity.CartItemEntity;
 import yandex.practicum.market.entity.ItemEntity;
 import yandex.practicum.market.dto.ItemDto;
 import yandex.practicum.market.service.ItemOperationService;
-import yandex.practicum.market.service.SessionService;
+import yandex.practicum.market.service.CartService;
 import yandex.practicum.market.service.ItemService;
 
 import java.math.BigDecimal;
@@ -50,7 +50,7 @@ public class ItemControllerTest {
     private ItemService itemService;
 
     @MockitoBean
-    private SessionService sessionService;
+    private CartService cartService;
 
     @MockitoBean
     private HttpSession session;
@@ -69,7 +69,7 @@ public class ItemControllerTest {
         List<ItemEntity> testItems = List.of(item1, item2);
         Page<ItemEntity> page = new PageImpl<>(testItems);
 
-        SessionEntity cart = new SessionEntity(1L, sessionId);
+        CartEntity cart = new CartEntity(1L, sessionId);
         CartItemEntity cartDetail1 = new CartItemEntity(cart, item1, 1, item1.getPrice());
         CartItemEntity cartDetail2 = new CartItemEntity(cart, item2, 2, item2.getPrice());
 
@@ -78,7 +78,7 @@ public class ItemControllerTest {
 
         when(itemService.getItems(anyString(), any(Pageable.class))).thenReturn(page);
         when(session.getId()).thenReturn(sessionId);
-        when(sessionService.getOrCreateSessionById(sessionId)).thenReturn(cart);
+        when(cartService.getOrCreateSessionById(sessionId)).thenReturn(cart);
 
         MockHttpSession mockSession = new MockHttpSession(null, sessionId);
 
@@ -103,7 +103,7 @@ public class ItemControllerTest {
 
         when(itemService.getItem(1L)).thenReturn(testItem);
         when(session.getId()).thenReturn(sessionId);
-        when(sessionService.getOrCreateSessionById(anyString())).thenReturn(new SessionEntity(1L, sessionId));
+        when(cartService.getOrCreateSessionById(anyString())).thenReturn(new CartEntity(1L, sessionId));
 
         MockHttpSession mockSession = new MockHttpSession(null, sessionId);
 
@@ -125,7 +125,7 @@ public class ItemControllerTest {
                 .andExpect(status().isNotFound());
 
         verify(itemService).getItem(nonExistentItemId);
-        verifyNoInteractions(sessionService);
+        verifyNoInteractions(cartService);
     }
 
     @Test
@@ -144,7 +144,7 @@ public class ItemControllerTest {
         Page<ItemEntity> page = new PageImpl<>(testItems);
         when(itemService.getItems(anyString(), any(Pageable.class))).thenReturn(page);
         when(session.getId()).thenReturn(sessionId);
-        when(sessionService.getOrCreateSessionById(sessionId)).thenReturn(new SessionEntity(1L, sessionId));
+        when(cartService.getOrCreateSessionById(sessionId)).thenReturn(new CartEntity(1L, sessionId));
 
         MockHttpSession mockSession = new MockHttpSession(null, sessionId);
 
@@ -179,7 +179,7 @@ public class ItemControllerTest {
 
         // Проверка вызовов сервисов
         verify(itemService).getItems(eq(""), any(Pageable.class));
-        verify(sessionService).getOrCreateSessionById(sessionId);
+        verify(cartService).getOrCreateSessionById(sessionId);
     }
 
 }

@@ -11,13 +11,13 @@ import org.springframework.ui.Model;
 
 import jakarta.servlet.http.HttpSession;
 import yandex.practicum.market.dto.factory.ItemDtoFactory;
-import yandex.practicum.market.entity.SessionEntity;
+import yandex.practicum.market.entity.CartEntity;
 import yandex.practicum.market.entity.CartItemEntity;
 import yandex.practicum.market.entity.ItemEntity;
 import yandex.practicum.market.entity.OrderEntity;
 import yandex.practicum.market.dto.OrderDto;
 import yandex.practicum.market.dto.factory.OrderDtoFactory;
-import yandex.practicum.market.service.SessionService;
+import yandex.practicum.market.service.CartService;
 import yandex.practicum.market.service.OrderService;
 
 import java.math.BigDecimal;
@@ -40,7 +40,7 @@ class OrderControllerTest {
     private OrderService orderService;
 
     @MockitoBean
-    private SessionService sessionService;
+    private CartService cartService;
 
     @MockitoBean
     private HttpSession session;
@@ -48,7 +48,7 @@ class OrderControllerTest {
     @MockitoBean
     private Model model;
 
-    private SessionEntity testCart;
+    private CartEntity testCart;
     private ItemEntity testItem;
 
 
@@ -57,10 +57,10 @@ class OrderControllerTest {
         // Подготовка данных корзины
         String sessionId = "1";
         testItem = new ItemEntity(1L, "Item", "Desc", "img.jpg", BigDecimal.ONE);
-        testCart = new SessionEntity(1L, sessionId);
+        testCart = new CartEntity(1L, sessionId);
 
         when(session.getId()).thenReturn(sessionId);
-        when(sessionService.getOrCreateSessionById(sessionId)).thenReturn(testCart);
+        when(cartService.getOrCreateSessionById(sessionId)).thenReturn(testCart);
 
         CartItemEntity cartDetail = new CartItemEntity(testCart, testItem, 2, testItem.getPrice());
         testCart.getItems().put(testItem, cartDetail);
@@ -69,7 +69,7 @@ class OrderControllerTest {
         order.setId(1L);
 
         when(session.getId()).thenReturn(sessionId);
-        when(sessionService.getOrCreateSessionById(sessionId)).thenReturn(testCart);
+        when(cartService.getOrCreateSessionById(sessionId)).thenReturn(testCart);
         when(orderService.buy(testCart)).thenReturn(order);
 
         MockHttpSession mockSession = new MockHttpSession(null, sessionId);
@@ -79,22 +79,22 @@ class OrderControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/orders/1?newOrder=true"));
 
-        verify(sessionService).clear(testCart);
+        verify(cartService).clear(testCart);
     }
 
     @Test
     void showOrders_ShouldReturnOrdersView() throws Exception {
         // Arrange
         String sessionId = "2";
-        SessionEntity sessionEntity = new SessionEntity();
+        CartEntity cartEntity = new CartEntity();
         List<OrderEntity> orders = new ArrayList<>();
         OrderEntity order = new OrderEntity();
         orders.add(order);
         OrderDto orderDto = new OrderDtoFactory(new ItemDtoFactory()).of(order, BigDecimal.ZERO);
 
         when(session.getId()).thenReturn(sessionId);
-        when(sessionService.getOrCreateSessionById(sessionId)).thenReturn(sessionEntity);
-        when(orderService.getAllOrdersBySessionId(sessionEntity.getId())).thenReturn(orders);
+        when(cartService.getOrCreateSessionById(sessionId)).thenReturn(cartEntity);
+        when(orderService.getAllOrdersBySessionId(cartEntity.getId())).thenReturn(orders);
         when(orderService.getOrderTotalCost(order.getId())).thenReturn(BigDecimal.ZERO);
 
         MockHttpSession mockSession = new MockHttpSession(null, sessionId);

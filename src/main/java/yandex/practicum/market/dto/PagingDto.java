@@ -30,7 +30,7 @@ public class PagingDto {
 
     public static PagingDto of(@NonNull Page<?> page) {
         int zeroBasedPageNumber = page.getNumber();
-        int oneBasedPageNumber = ++ zeroBasedPageNumber;
+        int oneBasedPageNumber = zeroBasedPageNumber + 1;
         int pageSize = page.getSize();
         boolean hasNext = page.hasNext();
         boolean hasPrevious = page.hasPrevious();

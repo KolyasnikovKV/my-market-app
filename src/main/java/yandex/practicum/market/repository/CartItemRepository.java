@@ -7,13 +7,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import yandex.practicum.market.entity.CartItemEntity;
-import yandex.practicum.market.entity.CartItemlIdEntity;
+import yandex.practicum.market.entity.CartItemIdEntity;
 
 import java.math.BigDecimal;
 import java.util.Optional;
 
 @Repository
-public interface CartItemRepository extends JpaRepository<CartItemEntity, CartItemlIdEntity> {
+public interface CartItemRepository extends JpaRepository<CartItemEntity, CartItemIdEntity> {
     @Transactional
     @Modifying
     @Query("DELETE FROM CartItemEntity cd WHERE cd.session.id = :sessionId")

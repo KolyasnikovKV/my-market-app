@@ -2,7 +2,7 @@ package yandex.practicum.market.service;
 
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
-import yandex.practicum.market.entity.SessionEntity;
+import yandex.practicum.market.entity.CartEntity;
 import yandex.practicum.market.entity.OrderEntity;
 import yandex.practicum.market.repository.OrderItemRepository;
 import yandex.practicum.market.repository.OrderRepository;
@@ -20,8 +20,8 @@ public class OrderService {
         this.orderItemRepository = orderItemRepository;
     }
 
-    public OrderEntity buy(@NonNull SessionEntity sessionEntity) {
-        OrderEntity order = new OrderEntity(sessionEntity);
+    public OrderEntity buy(@NonNull CartEntity cartEntity) {
+        OrderEntity order = new OrderEntity(cartEntity);
         OrderEntity savedOrder = orderRepository.save(order);
 
         return savedOrder;

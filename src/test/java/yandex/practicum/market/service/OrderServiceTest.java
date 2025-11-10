@@ -6,7 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import yandex.practicum.market.entity.SessionEntity;
+import yandex.practicum.market.entity.CartEntity;
 import yandex.practicum.market.entity.CartItemEntity;
 import yandex.practicum.market.entity.ItemEntity;
 import yandex.practicum.market.entity.OrderEntity;
@@ -34,7 +34,7 @@ class OrderServiceTest {
 
     @Test
     void buy_shouldCreateOrderFromCart() {
-        SessionEntity session = Mockito.mock(SessionEntity.class);
+        CartEntity session = Mockito.mock(CartEntity.class);
         Long sessionId = 31L;
         when(session.getId()).thenReturn(sessionId);
 
@@ -60,7 +60,7 @@ class OrderServiceTest {
 
     @Test
     void getAllOrders_shouldReturnOrdersBySessionIdForCart() {
-        SessionEntity session = Mockito.mock(SessionEntity.class);
+        CartEntity session = Mockito.mock(CartEntity.class);
         Long sessionId = 32L;
         when(session.getId()).thenReturn(sessionId);
 
@@ -79,7 +79,7 @@ class OrderServiceTest {
 
     @Test
     void getOrder_shouldReturnOrderWhenExists() {
-        SessionEntity session = Mockito.mock(SessionEntity.class);
+        CartEntity session = Mockito.mock(CartEntity.class);
         Long orderId = 1L;
         OrderEntity expectedOrder = new OrderEntity(session);
         expectedOrder.setId(orderId);
@@ -105,7 +105,7 @@ class OrderServiceTest {
     void getOrderTotalCost_shouldReturnSumForOrder() {
 
         Long orderId = 1L;
-        SessionEntity session = Mockito.mock(SessionEntity.class);
+        CartEntity session = Mockito.mock(CartEntity.class);
         OrderEntity order = new OrderEntity(session);
         order.setId(orderId);
 
@@ -124,7 +124,7 @@ class OrderServiceTest {
     void getOrderTotalCost_shouldReturnZeroWhenNoDetails() {
 
         Long orderId = 1L;
-        SessionEntity session = Mockito.mock(SessionEntity.class);
+        CartEntity session = Mockito.mock(CartEntity.class);
         OrderEntity order = new OrderEntity(session);
         order.setId(orderId);
 

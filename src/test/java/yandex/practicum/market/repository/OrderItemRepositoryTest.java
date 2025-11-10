@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
-import yandex.practicum.market.entity.SessionEntity;
+import yandex.practicum.market.entity.CartEntity;
 import yandex.practicum.market.entity.ItemEntity;
 import yandex.practicum.market.entity.OrderEntity;
 import yandex.practicum.market.entity.OrderItemEntity;
@@ -30,8 +30,8 @@ class OrderItemRepositoryTest {
     @Transactional
     void sumTotalCostInOrder_shouldCalculateCorrectTotal() {
         // Arrange
-        SessionEntity cart = new SessionEntity("1");
-        SessionEntity savedCart = entityManager.persist(cart);
+        CartEntity cart = new CartEntity("1");
+        CartEntity savedCart = entityManager.persist(cart);
 
         ItemEntity item1 = new ItemEntity("title1", "desc1", "img1.jpg", BigDecimal.ONE);
         ItemEntity item2 = new ItemEntity("title2", "desc2", "img2.jpg", BigDecimal.TWO);
@@ -64,7 +64,7 @@ class OrderItemRepositoryTest {
     @Transactional
     void sumTotalCostInOrder_shouldReturnEmptyForEmptyOrder() {
         // Arrange
-        OrderEntity order = new OrderEntity(new SessionEntity("1"));
+        OrderEntity order = new OrderEntity(new CartEntity("1"));
         entityManager.persist(order.getSession());
         entityManager.persist(order);
         entityManager.flush();
@@ -80,7 +80,7 @@ class OrderItemRepositoryTest {
     @Transactional
     void shouldPersistOrderDetailWithCompositeKey() {
         // Arrange
-        OrderEntity order = new OrderEntity(new SessionEntity("session1"));
+        OrderEntity order = new OrderEntity(new CartEntity("session1"));
         ItemEntity item = new ItemEntity("title1", "desc1", "img1.jpg", BigDecimal.ONE);
 
         entityManager.persist(order.getSession());
@@ -102,7 +102,7 @@ class OrderItemRepositoryTest {
     @Test
     void shouldNotAllowNegativeQuantity() {
         // Arrange
-        OrderEntity order = new OrderEntity(new SessionEntity("session1"));
+        OrderEntity order = new OrderEntity(new CartEntity("session1"));
         ItemEntity item = new ItemEntity("title1", "desc1", "img1.jpg", BigDecimal.ONE);
 
         entityManager.persist(order.getSession());
@@ -120,7 +120,7 @@ class OrderItemRepositoryTest {
     @Test
     void shouldNotAllowNegativePrice() {
         // Arrange
-        OrderEntity order = new OrderEntity(new SessionEntity("session1"));
+        OrderEntity order = new OrderEntity(new CartEntity("session1"));
         ItemEntity item = new ItemEntity("title1", "desc1", "img1.jpg", BigDecimal.ONE);
 
         entityManager.persist(order.getSession());

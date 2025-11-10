@@ -8,10 +8,10 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import yandex.practicum.market.dto.factory.ItemDtoFactory;
-import yandex.practicum.market.entity.SessionEntity;
+import yandex.practicum.market.entity.CartEntity;
 import yandex.practicum.market.entity.ItemEntity;
 import yandex.practicum.market.service.CartOperationService;
-import yandex.practicum.market.service.SessionService;
+import yandex.practicum.market.service.CartService;
 import yandex.practicum.market.service.ItemService;
 
 import jakarta.servlet.http.HttpSession;
@@ -34,7 +34,7 @@ public class CartControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private SessionService sessionService;
+    private CartService cartService;
 
     @MockitoBean
     private ItemService itemService;
@@ -43,7 +43,7 @@ public class CartControllerTest {
     private HttpSession session;
 
     private final String sessionId = "1";
-    private SessionEntity testSession;
+    private CartEntity testSession;
     private ItemEntity testItem;
 
 
@@ -51,15 +51,15 @@ public class CartControllerTest {
     void showCart_shouldReturnCartViewWithItems() throws Exception {
         // Подготовка данных корзины
         testItem = new ItemEntity(1L, "Item", "Desc", "img.jpg", BigDecimal.ONE);
-        testSession = new SessionEntity(1L, sessionId);
+        testSession = new CartEntity(1L, sessionId);
 
         when(session.getId()).thenReturn(sessionId);
-        when(sessionService.getOrCreateSessionById(sessionId)).thenReturn(testSession);
+        when(cartService.getOrCreateSessionById(sessionId)).thenReturn(testSession);
 
         CartItemEntity cartDetail = new CartItemEntity(testSession, testItem, 2, testItem.getPrice());
         testSession.getItems().put(testItem, cartDetail);
 
-        when(sessionService.getCartTotalCostBySessionId(testSession.getId())).thenReturn(BigDecimal.valueOf(2));
+        when(cartService.getCartTotalCostBySessionId(testSession.getId())).thenReturn(BigDecimal.valueOf(2));
 
         MockHttpSession mockSession = new MockHttpSession(null, sessionId);
 
@@ -75,12 +75,12 @@ public class CartControllerTest {
 
     @Test
     void showCart_shouldReturnEmptyCart() throws Exception {
-        testSession = new SessionEntity(1L, sessionId);
+        testSession = new CartEntity(1L, sessionId);
 
         when(session.getId()).thenReturn(sessionId);
-        when(sessionService.getOrCreateSessionById(sessionId)).thenReturn(testSession);
+        when(cartService.getOrCreateSessionById(sessionId)).thenReturn(testSession);
 
-        when(sessionService.getCartTotalCostBySessionId(testSession.getId()))
+        when(cartService.getCartTotalCostBySessionId(testSession.getId()))
                 .thenReturn(BigDecimal.ZERO);
 
         MockHttpSession mockSession = new MockHttpSession(null, sessionId);
@@ -94,10 +94,10 @@ public class CartControllerTest {
     @Test
     void updateCartByMainPage_shouldRedirectToMain() throws Exception {
         testItem = new ItemEntity(1L, "Item", "Desc", "img.jpg", BigDecimal.ONE);
-        testSession = new SessionEntity(1L, sessionId);
+        testSession = new CartEntity(1L, sessionId);
 
         when(session.getId()).thenReturn(sessionId);
-        when(sessionService.getOrCreateSessionById(sessionId)).thenReturn(testSession);
+        when(cartService.getOrCreateSessionById(sessionId)).thenReturn(testSession);
 
         when(itemService.getItem(1L)).thenReturn(testItem);
 
@@ -109,16 +109,16 @@ public class CartControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/items/1"));
 
-        verify(sessionService).updateCart(eq(testSession), eq(testItem), eq(ActionType.PLUS));
+        verify(cartService).updateCart(eq(testSession), eq(testItem), eq(ActionType.PLUS));
     }
 
     @Test
     void updateCartByCartPage_shouldRedirectToCart() throws Exception {
         testItem = new ItemEntity(1L, "Item", "Desc", "img.jpg", BigDecimal.ONE);
-        testSession = new SessionEntity(1L, sessionId);
+        testSession = new CartEntity(1L, sessionId);
 
         when(session.getId()).thenReturn(sessionId);
-        when(sessionService.getOrCreateSessionById(sessionId)).thenReturn(testSession);
+        when(cartService.getOrCreateSessionById(sessionId)).thenReturn(testSession);
 
         when(itemService.getItem(1L)).thenReturn(testItem);
 
@@ -131,16 +131,16 @@ public class CartControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/cart/items"));
 
-        verify(sessionService).updateCart(eq(testSession), eq(testItem), eq(ActionType.DELETE));
+        verify(cartService).updateCart(eq(testSession), eq(testItem), eq(ActionType.DELETE));
     }
 
     @Test
     void updateCartByItemPage_shouldRedirectToItemPage() throws Exception {
         testItem = new ItemEntity(1L, "Item", "Desc", "img.jpg", BigDecimal.ONE);
-        testSession = new SessionEntity(1L, sessionId);
+        testSession = new CartEntity(1L, sessionId);
 
         when(session.getId()).thenReturn(sessionId);
-        when(sessionService.getOrCreateSessionById(sessionId)).thenReturn(testSession);
+        when(cartService.getOrCreateSessionById(sessionId)).thenReturn(testSession);
 
         when(itemService.getItem(1L)).thenReturn(testItem);
 
@@ -152,15 +152,15 @@ public class CartControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/items/1"));
 
-        verify(sessionService).updateCart(eq(testSession), eq(testItem), eq(ActionType.MINUS));
+        verify(cartService).updateCart(eq(testSession), eq(testItem), eq(ActionType.MINUS));
     }
 
     @Test
     void updateCart_shouldThrowExceptionWhenItemNotFound() throws Exception {
-        testSession = new SessionEntity(1L, sessionId);
+        testSession = new CartEntity(1L, sessionId);
 
         when(session.getId()).thenReturn(sessionId);
-        when(sessionService.getOrCreateSessionById(sessionId)).thenReturn(testSession);
+        when(cartService.getOrCreateSessionById(sessionId)).thenReturn(testSession);
 
         when(itemService.getItem(0L)).thenReturn(null);
 

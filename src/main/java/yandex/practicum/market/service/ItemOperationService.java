@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import yandex.practicum.market.dto.ItemDto;
 import yandex.practicum.market.dto.factory.ItemDtoFactory;
 import yandex.practicum.market.entity.CartItemEntity;
-import yandex.practicum.market.entity.SessionEntity;
+import yandex.practicum.market.entity.CartEntity;
 import yandex.practicum.market.entity.ItemEntity;
 
 import java.util.ArrayList;
@@ -24,17 +24,17 @@ public class ItemOperationService {
     private int itemRowSize;
 
     private final ItemDtoFactory itemDtoFactory;
-    private final SessionService sessionService;
+    private final CartService cartService;
     private final ItemService itemService;
 
-    public ItemOperationService(ItemDtoFactory itemDtoFactory, SessionService sessionService, ItemService itemService) {
+    public ItemOperationService(ItemDtoFactory itemDtoFactory, CartService cartService, ItemService itemService) {
         this.itemDtoFactory = itemDtoFactory;
-        this.sessionService = sessionService;
+        this.cartService = cartService;
         this.itemService = itemService;
     }
 
     public List<List<ItemDto>> getListOfListItemDto(String sessionId, Page<ItemEntity> page) {
-        SessionEntity cart = sessionService.getOrCreateSessionById(sessionId);
+        CartEntity cart = cartService.getOrCreateSessionById(sessionId);
 
         List<ItemEntity> items = page.getContent();
         List<List<ItemDto>> listOfListItemDto  = new LinkedList<>();
@@ -65,8 +65,8 @@ public class ItemOperationService {
     }
     public ItemDto getItem(Long id, String sessionId) {
         ItemEntity item = itemService.getItem(id);
-        SessionEntity sessionEntity = sessionService.getOrCreateSessionById(sessionId);
-        Optional<CartItemEntity> cartItemOptional = sessionEntity.getCartItem(item);
+        CartEntity cartEntity = cartService.getOrCreateSessionById(sessionId);
+        Optional<CartItemEntity> cartItemOptional = cartEntity.getCartItem(item);
 
         Integer quantity = 0;
         if (cartItemOptional.isPresent()) {

@@ -5,11 +5,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import yandex.practicum.market.entity.SessionEntity;
+import yandex.practicum.market.entity.CartEntity;
 import yandex.practicum.market.entity.OrderEntity;
 import yandex.practicum.market.dto.OrderDto;
 import yandex.practicum.market.dto.factory.OrderDtoFactory;
-import yandex.practicum.market.service.SessionService;
+import yandex.practicum.market.service.CartService;
 import yandex.practicum.market.service.OrderService;
 
 import java.math.BigDecimal;
@@ -21,22 +21,22 @@ import java.util.NoSuchElementException;
 public class OrderController {
 
     private final OrderService orderService;
-    private final SessionService sessionService;
+    private final CartService cartService;
     private final OrderDtoFactory orderDtoFactory;
 
-    public OrderController(OrderService orderService, SessionService sessionService, OrderDtoFactory orderDtoFactory) {
+    public OrderController(OrderService orderService, CartService cartService, OrderDtoFactory orderDtoFactory) {
         this.orderService = orderService;
-        this.sessionService = sessionService;
+        this.cartService = cartService;
         this.orderDtoFactory = orderDtoFactory;
     }
 
     @PostMapping("/buy")
     public String buyItems(HttpSession session) {
         String sessionId = session.getId();
-        SessionEntity cart = sessionService.getOrCreateSessionById(sessionId);
+        CartEntity cart = cartService.getOrCreateSessionById(sessionId);
 
         OrderEntity order = orderService.buy(cart);
-        sessionService.clear(cart);
+        cartService.clear(cart);
 
         return "redirect:/orders/" + order.getId() + "?newOrder=true";
     }
@@ -45,9 +45,9 @@ public class OrderController {
     @GetMapping("/orders")
     public String showOrders(Model model, HttpSession session) {
         String sessionId = session.getId();
-        SessionEntity sessionEntity = sessionService.getOrCreateSessionById(sessionId);
+        CartEntity cartEntity = cartService.getOrCreateSessionById(sessionId);
 
-        List<OrderEntity> orders = orderService.getAllOrdersBySessionId(sessionEntity.getId());
+        List<OrderEntity> orders = orderService.getAllOrdersBySessionId(cartEntity.getId());
         List<OrderDto> orderDTOs = new ArrayList<>(orders.size());
 
         for (OrderEntity order : orders) {
@@ -76,10 +76,5 @@ public class OrderController {
         model.addAttribute("newOrder", newOrder);
 
         return "order";
-    }
-
-    @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<String> handleNoSuchElement(NoSuchElementException e) {
-        return ResponseEntity.notFound().build();
     }
 }

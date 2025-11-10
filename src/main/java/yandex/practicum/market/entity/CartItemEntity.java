@@ -15,12 +15,12 @@ import java.math.BigDecimal;
 @EqualsAndHashCode
 public class CartItemEntity {
     @EmbeddedId
-    private CartItemlIdEntity id;
+    private CartItemIdEntity id;
 
     @ManyToOne
-    @MapsId("SessionId")
+    @MapsId("cartId")
     @JoinColumn(name = "session_id", nullable = false)
-    private SessionEntity session;
+    private CartEntity session;
 
     @ManyToOne
     @MapsId("itemId")
@@ -33,8 +33,8 @@ public class CartItemEntity {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
-    public CartItemEntity(@NonNull SessionEntity session, @NonNull ItemEntity item, @NonNull Integer quantity, @NonNull BigDecimal price) {
-        this.id = new CartItemlIdEntity(session.getId(), item.getId());
+    public CartItemEntity(@NonNull CartEntity session, @NonNull ItemEntity item, @NonNull Integer quantity, @NonNull BigDecimal price) {
+        this.id = new CartItemIdEntity(session.getId(), item.getId());
         this.session = session;
         this.item = item;
         this.quantity = quantity;

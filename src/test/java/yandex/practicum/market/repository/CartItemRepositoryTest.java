@@ -6,7 +6,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
-import yandex.practicum.market.entity.SessionEntity;
+import yandex.practicum.market.entity.CartEntity;
 import yandex.practicum.market.entity.CartItemEntity;
 import yandex.practicum.market.entity.ItemEntity;
 
@@ -29,7 +29,7 @@ class CartItemRepositoryTest {
     @Transactional
     void deleteAllBySessionId_shouldRemoveAllDetailsForCart() {
         // Arrange
-        SessionEntity cart = new SessionEntity("1");
+        CartEntity cart = new CartEntity("1");
         entityManager.persist(cart);
 
         ItemEntity item1 = new ItemEntity("title1", "desc1", "img1.jpg", BigDecimal.ONE);
@@ -56,7 +56,7 @@ class CartItemRepositoryTest {
     @Transactional
     void sumTotalCostInCart_shouldReturnCorrectSumBySessionId() {
         // Arrange
-        SessionEntity cart = new SessionEntity("session1");
+        CartEntity cart = new CartEntity("session1");
         entityManager.persist(cart);
 
         ItemEntity item1 = new ItemEntity("title1", "desc1", "img1.jpg", BigDecimal.ONE);
@@ -82,7 +82,7 @@ class CartItemRepositoryTest {
     @Transactional
     void sumTotalCostInCart_shouldReturnEmptyForEmptyCartBySessionId() {
         // Arrange
-        SessionEntity cart = new SessionEntity("1");
+        CartEntity cart = new CartEntity("1");
         entityManager.persist(cart);
         entityManager.flush();
 
@@ -97,7 +97,7 @@ class CartItemRepositoryTest {
     @Transactional
     void shouldPersistCartDetailWithCompositeKey() {
         // Arrange
-        SessionEntity cart = new SessionEntity("1");
+        CartEntity cart = new CartEntity("1");
         entityManager.persist(cart);
 
         ItemEntity item = new ItemEntity("title1", "desc1", "img1.jpg", BigDecimal.ONE);
@@ -111,7 +111,7 @@ class CartItemRepositoryTest {
 
         // Assert
         assertNotNull(savedDetail);
-        assertEquals(cart.getId(), savedDetail.getId().getSessionId());
+        assertEquals(cart.getId(), savedDetail.getId().getCartId());
         assertEquals(item.getId(), savedDetail.getId().getItemId());
     }
 }
