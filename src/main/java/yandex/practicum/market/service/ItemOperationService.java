@@ -5,16 +5,13 @@ import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import yandex.practicum.market.dto.ItemDto;
 import yandex.practicum.market.dto.factory.ItemDtoFactory;
-import yandex.practicum.market.entity.CartItemEntity;
-import yandex.practicum.market.entity.CartEntity;
 import yandex.practicum.market.entity.ItemEntity;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ItemOperationService {
@@ -33,10 +30,8 @@ public class ItemOperationService {
         this.itemService = itemService;
     }
 
-    public List<List<ItemDto>> getListOfListItemDto(String sessionId, Page<ItemEntity> page) {
-        CartEntity cart = cartService.getOrCreateSessionById(sessionId);
+    public List<List<ItemDto>> getListOfListItemDto(String sessionId, List<ItemEntity> items) {
 
-        List<ItemEntity> items = page.getContent();
         List<List<ItemDto>> listOfListItemDto  = new LinkedList<>();
 
         int count = 0;
@@ -45,10 +40,9 @@ public class ItemOperationService {
 
         for (ItemEntity item : items) {
             Integer quantity = 0;
-            Optional<CartItemEntity> cartItemOptional = cart.getCartItem(item);
+            Optional<Integer> cartItemOptional = cartService.getItemCountInCartByItemId(sessionId, item.getId()).blockOptional();
             if (cartItemOptional.isPresent()) {
-                CartItemEntity cartItem = cartItemOptional.get();
-                quantity = cartItem.getQuantity();
+                quantity = cartItemOptional.get();
             }
             ItemDto itemDto = itemDtoFactory.of(item, quantity);
             listItemDto.add(itemDto);
@@ -63,18 +57,13 @@ public class ItemOperationService {
         }
         return listOfListItemDto;
     }
-    public ItemDto getItem(Long id, String sessionId) {
-        ItemEntity item = itemService.getItem(id);
-        CartEntity cartEntity = cartService.getOrCreateSessionById(sessionId);
-        Optional<CartItemEntity> cartItemOptional = cartEntity.getCartItem(item);
 
-        Integer quantity = 0;
-        if (cartItemOptional.isPresent()) {
-            CartItemEntity cartItem = cartItemOptional.get();
-            quantity = cartItem.getQuantity();
-        }
+    public Mono<ItemDto> getItem(Long id, String sessionId) {
+        return itemService.getItem(id) // Возвращает Mono<ItemEntity>
+                .zipWith(
+                        cartService.getItemCountInCartByItemId(sessionId, id),
+                        (item, cartCount) -> itemDtoFactory.of(item, cartCount)
+                );
 
-        ItemDto itemDto = itemDtoFactory.of(item, quantity);
-        return itemDto;
     }
 }

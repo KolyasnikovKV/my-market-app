@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 
 @AllArgsConstructor
 @Data
+@Builder
 public class ItemDto {
     private Long id;
     private String title;

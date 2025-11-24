@@ -2,6 +2,7 @@ package yandex.practicum.market.service;
 
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 import yandex.practicum.market.entity.ItemEntity;
 import yandex.practicum.market.repository.ItemRepository;
 
@@ -13,7 +14,7 @@ public class AdminService {
         this.itemRepository = itemRepository;
     }
 
-    public ItemEntity saveItem(@NonNull ItemEntity item) {
+    public Mono<ItemEntity> saveItem(@NonNull ItemEntity item) {
         return itemRepository.save(item);
     }
 }

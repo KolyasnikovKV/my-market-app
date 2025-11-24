@@ -2,6 +2,7 @@ package yandex.practicum.market.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Mono;
 import yandex.practicum.market.entity.ItemEntity;
 import yandex.practicum.market.storage.StorageService;
 
@@ -18,33 +19,47 @@ public class AdminOperation {
         this.storageService = storageService;
     }
 
-    public String addItem(String title, String description, MultipartFile imageFile, BigDecimal price) {
+
+    public Mono<String> addItem(
+            String title,
+            String description,
+            MultipartFile imageFile,
+            BigDecimal price
+    ) {
+        // Создаём сущность товара
         ItemEntity item = new ItemEntity();
         item.setTitle(title);
         item.setDescription(description);
 
-        // Обработка загрузки файла
         if (imageFile != null && !imageFile.isEmpty()) {
-            // Устанавливаем имя файла
             String fileName = imageFile.getOriginalFilename();
             item.setImgPath(fileName);
         }
-
         item.setPrice(price);
 
-        // Сохраняем товар
-        final ItemEntity savedItem = adminService.saveItem(item);
+        // Сохраняем товар (реактивный вызов)
+        return adminService.saveItem(item)
+                .flatMap(savedItem -> {
+                    Long itemId = savedItem.getId();
+                    String itemTitle = savedItem.getTitle();
 
-        if (savedItem != null) {
-            final Long itemId = savedItem.getId();
-            // Сохраняем изображение
-            if (imageFile != null && !imageFile.isEmpty())
-                storageService.store(itemId.toString(), imageFile);
-        }
-
-        Long itemId = savedItem.getId();
-        String itemTitle = savedItem.getTitle();
-        String message = String.format("Item has been added successfully: id=%d, title=\"%s\"", itemId, itemTitle);
-        return message;
+                    // Если есть файл — сохраняем его (реактивный вызов)
+                    if (imageFile != null && !imageFile.isEmpty()) {
+                        storageService.store(itemId.toString(), imageFile);
+                        return Mono.just(String.format(
+                                        "Item has been added successfully: id=%d, title=\"%s\"",
+                                        itemId, itemTitle
+                                ));
+                    } else {
+                        // Нет файла — сразу возвращаем сообщение
+                        return Mono.just(String.format
+                                ("Item has been added successfully: id=%d, title=\"%s\"",
+                                        itemId, itemTitle)
+                        );
+                    }
+                })
+                .onErrorResume(ex -> {
+                    return Mono.error(new RuntimeException("Не удалось добавить товар: " + ex.getMessage()));
+                });
     }
 }

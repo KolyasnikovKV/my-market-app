@@ -1,41 +1,27 @@
 package yandex.practicum.market.entity;
 
-import lombok.Data;
-import jakarta.persistence.*;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import org.springframework.lang.NonNull;
+import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
+
 
 import java.math.BigDecimal;
 
-@Entity
 @Table(name = "order_details")
 @Data
+@Builder
 @NoArgsConstructor
-@EqualsAndHashCode
+@AllArgsConstructor
+@EqualsAndHashCode(of = {"orderId", "itemId"})
 public class OrderItemEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "order_id", nullable = false)
-    private OrderEntity order;
+    private Long orderId;
 
-    @ManyToOne
-    @JoinColumn(name = "item_id", nullable = false)
-    private ItemEntity item;
+    private Long itemId;
 
-    @Column(nullable = false)
-    private Integer quantity;
+    private Integer count;
 
-    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
-
-    public OrderItemEntity(@NonNull OrderEntity order, @NonNull ItemEntity item, @NonNull Integer quantity, @NonNull BigDecimal price) {;
-        this.order = order;
-        this.item = item;
-        this.quantity = quantity;
-        this.price = price;
-    }
 }
