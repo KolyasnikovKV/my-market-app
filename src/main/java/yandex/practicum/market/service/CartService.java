@@ -1,106 +1,89 @@
 package yandex.practicum.market.service;
 
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import yandex.practicum.market.dto.ItemDto;
+import yandex.practicum.market.repository.ItemRepository;
 import yandex.practicum.market.types.ActionType;
-import yandex.practicum.market.entity.CartEntity;
-import yandex.practicum.market.entity.CartItemEntity;
-import yandex.practicum.market.entity.ItemEntity;
-import yandex.practicum.market.repository.CartItemRepository;
-import yandex.practicum.market.repository.CartRepository;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static java.util.Objects.isNull;
 
 @Service
 public class CartService {
-    private final CartRepository cartRepository;
-    private final CartItemRepository cartItemRepository;
+    private final ItemRepository itemRepository;
+    private final ItemService itemService;
+    private final Map<String, Map<Long, Integer>> cart = new ConcurrentHashMap<>();
 
-    public CartService(
-            CartRepository cartRepository,
-            CartItemRepository cartItemRepository//,
-    ) {
-        this.cartRepository = cartRepository;
-        this.cartItemRepository = cartItemRepository;
+    public CartService(ItemRepository itemRepository, ItemService itemService) {
+        this.itemRepository = itemRepository;
+        this.itemService = itemService;
     }
 
-    public CartEntity save(@NonNull CartEntity cart) {
-        return cartRepository.save(cart);
+    public Flux<ItemDto> getItemDtos(String sessionId) {
+
+        Map<Long, Integer> userCart = cart.get(sessionId);
+
+        List<Long> ids = new ArrayList<>(userCart.keySet());
+        return itemService.findAllItemsByIds(ids)
+                .map(itemDto -> convertItemWithCartCount(itemDto, userCart));
+
     }
 
-    public void clear(@NonNull CartEntity cart) {
-        cartItemRepository.deleteAllByCartId(cart.getId());
+
+    public Flux<ItemDto> getCart(String sessionId) {
+        Map<Long, Integer> userCart = cart.get(sessionId);
+
+        List<Long> ids = new ArrayList<>(userCart.keySet());
+        return itemService.findAllItemsByIds(ids)
+                .map(itemDto -> convertItemWithCartCount(itemDto, userCart));
     }
 
-    public void updateCart(
-            @NonNull CartEntity cartEntity,
-            @NonNull ItemEntity item,
-            @NonNull ActionType action
-    ) {
-        Optional<CartItemEntity> cartItemOptional = cartEntity.getCartItem(item);
 
-        if (cartItemOptional.isPresent()) {
-            CartItemEntity cartItem = cartItemOptional.get();
-            handleAction(cartEntity, item, action, cartItem);
-        } else if (action == ActionType.PLUS) {
-            addItemToCart(cartEntity, item);
-        }
+    public Mono<Void> changeItemCountInCartByItemId(String sessionId, Long itemId, ActionType action) {
+        Map<Long, Integer> userCart = cart.computeIfAbsent(sessionId, k -> new HashMap<>());
 
-        saveCart(cartEntity);
-    }
-
-    private void handleAction(CartEntity cartEntity, ItemEntity item, ActionType action, CartItemEntity cartItem) {
         switch (action) {
-            case PLUS -> increaseQuantity(cartItem);
-            case MINUS -> decreaseQuantity(cartEntity, item, cartItem);
-            case DELETE -> removeItemFromCart(cartEntity, item);
+            case PLUS -> userCart.compute(itemId, (k, v) -> isNull(v) ? 1 : v + 1);
+            case MINUS -> userCart.compute(itemId, (k, v) -> (isNull(v) || v == 0) ? 0 : v - 1);
+            case DELETE -> userCart.remove(itemId);
         }
+        return Mono.empty();
     }
 
-    private void increaseQuantity(CartItemEntity cartItem) {
-        int quantity = cartItem.getQuantity();
-        cartItem.setQuantity(quantity + 1);
+    public Mono<Integer> getItemCountInCartByItemId(String sessionId, Long itemId) {
+        Map<Long, Integer> userCart = cart.computeIfAbsent(sessionId, k -> new HashMap<>());
+        return Mono.just(userCart.get(itemId));
     }
 
-    private void decreaseQuantity(CartEntity cartEntity, ItemEntity item, CartItemEntity cartItem) {
-        int quantity = cartItem.getQuantity();
-        if (quantity > 1) {
-            cartItem.setQuantity(quantity - 1);
-        } else {
-            removeItemFromCart(cartEntity, item);
-        }
+    public Flux<ItemDto> getAndResetCart(String sessionId) {
+        Map<Long, Integer> userCart = cart.get(sessionId);
+
+        Flux<ItemDto> cartItems = Flux.fromStream(
+                userCart.entrySet().stream()
+                        .map(entry -> ItemDto.builder()
+                                .id(entry.getKey())
+                                .count(entry.getValue())
+                                .build())
+        );
+        cart.remove(sessionId);
+        return cartItems;
     }
 
-    private void removeItemFromCart(CartEntity cartEntity, ItemEntity item) {
-        cartEntity.getItems().remove(item);
+    public Mono<BigDecimal> getCartTotalSum(String sessionId) {
+        return Flux.fromIterable((cart.get(sessionId).entrySet()))
+                .flatMap(userCart -> itemRepository.findById(userCart.getKey())
+                        .map(item -> item.getPrice().multiply(BigDecimal.valueOf(userCart.getValue())))
+                )
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    private void addItemToCart(CartEntity cartEntity, ItemEntity item) {
-        int quantity = 1;
-        BigDecimal price = item.getPrice();
-        CartItemEntity cartDetail = new CartItemEntity(cartEntity, item, quantity, price);
-        cartEntity.getItems().put(item, cartDetail);
+    private ItemDto convertItemWithCartCount(ItemDto item, Map<Long, Integer> userCart) {
+        item.setCount(userCart.computeIfAbsent(item.getId(), k -> 0));
+        return item;
     }
-
-    private void saveCart(CartEntity cartEntity) {
-        cartRepository.save(cartEntity);
-    }
-
-    public CartEntity getOrCreateSessionById(@NonNull String sessionId) {
-        Optional<CartEntity> cartOptional = cartRepository.findBySessionId(sessionId);
-        if (cartOptional.isPresent()) {
-            return cartOptional.get();
-        } else {
-            return saveSession(new CartEntity(sessionId));
-        }
-    }
-
-    public CartEntity saveSession(@NonNull CartEntity cartEntity) {
-        return cartRepository.save(cartEntity);
-    }
-
-    public BigDecimal getCartTotalCostBySessionId(@NonNull Long sessionId) {
-        return cartItemRepository.sumTotalCostInCartBySessionId(sessionId).orElse(BigDecimal.ZERO);
-    }
-}
+ }

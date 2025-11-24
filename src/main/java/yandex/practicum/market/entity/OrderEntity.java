@@ -1,41 +1,21 @@
 package yandex.practicum.market.entity;
 
 import lombok.*;
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
-import java.math.BigDecimal;
 import java.util.*;
 
-@Entity
 @Table(name = "orders")
-@Data
+@Getter
+@Setter
+@Builder
 @NoArgsConstructor
-@EqualsAndHashCode
+@AllArgsConstructor
+@EqualsAndHashCode(of = "id")
 public class OrderEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "session_id", nullable = false)
-    private CartEntity session;
-
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    @MapKey(name = "item")
-    private Map<ItemEntity, OrderItemEntity> items = new HashMap<>();
-
-    public OrderEntity(@NonNull CartEntity cartEntity) {
-        this.session = cartEntity;
-
-        Collection<CartItemEntity> cartDetails = cartEntity.getItems().values();
-
-        for (CartItemEntity cartDetail : cartDetails) {
-            ItemEntity item = cartDetail.getItem();
-            Integer quantity = cartDetail.getQuantity();
-            BigDecimal price = cartDetail.getPrice();
-
-            OrderItemEntity orderDetail = new OrderItemEntity(this, item, quantity, price);
-            items.put(item, orderDetail);
-        }
-    }
+    private String sessionId;
 }

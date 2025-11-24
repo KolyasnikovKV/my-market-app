@@ -1,27 +1,32 @@
 package yandex.practicum.market.repository;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+
+import org.springframework.data.r2dbc.repository.Query;
+import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import org.springframework.data.repository.query.Param;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import yandex.practicum.market.entity.ItemEntity;
 
-@Repository
-public interface ItemRepository extends JpaRepository<ItemEntity, Long> {
-    @Query("""
-            SELECT i FROM ItemEntity i WHERE
-            (:searchTerm IS NULL OR
-            LOWER(i.title) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR
-            LOWER(i.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')))
-            """)
-    Page<ItemEntity> findAllBySearchTerm(
-            @Nullable @Param("searchTerm") String searchTerm,
-            @NonNull Pageable pageable
-    );
 
-    boolean existsByTitle(String title);
+@Repository
+public interface ItemRepository extends R2dbcRepository<ItemEntity, Long> {
+
+    @Query("""
+            SELECT * FROM items
+            WHERE (:search IS NULL OR title ILIKE '%' || :search || '%' OR description ILIKE '%' || :search || '%')
+            ORDER BY :sortColumn
+            LIMIT :pageSize 
+            OFFSET :offset
+            """)
+    Flux<ItemEntity> findAllBySearchTerm(@Param("search") String search,
+                                          @Param("sortColumn") String sortColumn,
+                                          @Param("pageSize") Integer pageSize,
+                                          @Param("offset") Integer offset);
+
+
+    Flux<ItemEntity> findAllById(Iterable<Long> itemIds);
+
+    Mono<Boolean> existsByTitle(String title);
 }

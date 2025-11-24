@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import reactor.core.publisher.Mono;
 
 import java.util.NoSuchElementException;
 
@@ -11,15 +12,13 @@ import java.util.NoSuchElementException;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
-        return new ResponseEntity<>(
-                "Произошла ошибка: " + ex.getMessage(), // Сообщение об ошибке
-                HttpStatus.BAD_REQUEST // Код статуса HTTP
-        );
+    public Mono<ResponseEntity<String>> handleIllegalArgumentException(IllegalArgumentException ex) {
+        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Произошла ошибка: " + ex.getMessage()));
     }
 
     @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<String> handleNoSuchElement(NoSuchElementException e) {
-        return ResponseEntity.notFound().build();
+    public Mono<ResponseEntity<String>> handleNoSuchElement(NoSuchElementException ex) {
+        return Mono.just(ResponseEntity.notFound().build());
     }
 }

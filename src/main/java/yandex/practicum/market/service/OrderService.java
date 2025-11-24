@@ -2,40 +2,91 @@ package yandex.practicum.market.service;
 
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
-import yandex.practicum.market.entity.CartEntity;
+import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import yandex.practicum.market.dto.OrderDto;
 import yandex.practicum.market.entity.OrderEntity;
+import yandex.practicum.market.entity.OrderItemEntity;
+import yandex.practicum.market.mapper.ItemMapper;
+import yandex.practicum.market.repository.ItemRepository;
 import yandex.practicum.market.repository.OrderItemRepository;
 import yandex.practicum.market.repository.OrderRepository;
 
 import java.math.BigDecimal;
-import java.util.*;
 
 @Service
 public class OrderService {
+    private final ItemMapper itemMapper;
+    private final CartService cartService;
+    private final ItemService itemService;
+    private final ItemRepository itemRepository;
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
 
-    public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository) {
+
+    public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository,
+                        ItemMapper itemMapper, CartService cartService, ItemRepository itemRepository,
+                        ItemService itemService) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
+        this.itemMapper = itemMapper;
+        this.cartService = cartService;
+        this.itemRepository = itemRepository;
+        this.itemService = itemService;
     }
 
-    public OrderEntity buy(@NonNull CartEntity cartEntity) {
-        OrderEntity order = new OrderEntity(cartEntity);
-        OrderEntity savedOrder = orderRepository.save(order);
+    @Transactional
+    public Mono<Long> createOrder(String sessionId) {
+        return cartService.getAndResetCart(sessionId)
+                .collectList()
+                .flatMap(items ->
+                        orderRepository.save(OrderEntity.builder()
+                                        .sessionId(sessionId)
+                                        .build())
+                                .flatMap(order -> {
+                                    Flux<OrderItemEntity> orderItemsFlux = Flux.fromIterable(items)
+                                            .flatMap(item -> itemRepository.findById(item.getId())
+                                                    .map(itemEntity -> OrderItemEntity.builder()
+                                                            .orderId(order.getId())
+                                                            .itemId(itemEntity.getId())
+                                                            .count(item.getCount())
+                                                            .build())
+                                            );
+                                    return orderItemsFlux.collectList()
+                                            .flatMap(orderItemRepository::saveAll)
+                                            .thenMany(Flux.fromIterable(items))
+                                            .then(Mono.just(order.getId()));
+                                })
 
-        return savedOrder;
+                );
     }
 
-    public List<OrderEntity> getAllOrdersBySessionId(@NonNull Long id) {
-        return orderRepository.findBySessionId(id);
+    public Flux<OrderDto> findOrders(String sessionId) {
+        return orderRepository.findAllBySessionId(sessionId)
+                .flatMap(order -> orderItemRepository.findByOrderId(order.getId())
+                        .collectList()
+                        .map(items -> OrderDto.builder()
+                                .id(order.getId())
+                                .items(itemMapper.toItemDtos(items))
+                                .build())
+                );
     }
 
-    public OrderEntity getOrder(@NonNull Long id) {
-        return orderRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Invalid order"));
+    public Mono<OrderDto> findOrderById(Long orderId, String sessionId) {
+
+        return orderRepository.findByIdAndSessionId(orderId, sessionId)
+                .flatMap(order -> orderItemRepository.findByOrderId(order.getId())
+                        .collectList()
+                        .map(items -> OrderDto.builder()
+                                .id(order.getId())
+                                .items(itemMapper.toItemDtos(items))
+                                .build())
+                )
+                .switchIfEmpty(Mono.just(new OrderDto()));
     }
 
-    public BigDecimal getOrderTotalCost(@NonNull Long id) {
-        return orderItemRepository.sumTotalCostInOrder(id).orElse(BigDecimal.ZERO);
+    public Mono<BigDecimal> getOrderTotalCost(@NonNull Long id) {
+        return orderItemRepository.sumTotalCostInOrder(id).switchIfEmpty(Mono.just(BigDecimal.ZERO));
     }
 }
