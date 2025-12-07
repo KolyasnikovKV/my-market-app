@@ -1,1 +1,11 @@
+pluginManagement {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
 rootProject.name = 'my-market-app'
+include 'shop-service'
+include 'payment-service'
