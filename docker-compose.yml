@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  payment-service:
+    build: payment-service
+    image: payment-service
+    container_name: payment-service-container
+    ports:
+      - 8088:8088
+    depends_on:
+      - keycloak
+    restart: on-failure
+    environment:
+      - DEFAULT_BALANCE=3000
+      - OAUTH2_SERVER=http://keycloak:8080/realms/intershop
+
+  shop-service:
+    build: shop-service
+    image: shop-service
+    container_name: shop-service-container
+    ports:
+      - 8087:8087
+    depends_on:
+      - shop-service-db
+      - shop-service-cache
+    restart: on-failure
+    environment:
+      - SPRING_DATASOURCE_R2DBC_URL=r2dbc:postgresql://shop-service-db:5432/shop-service
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://store-showcase-db:5432/shop-service
+      - SPRING_DATASOURCE_USER=shop-service
+      - SPRING_DATASOURCE_PASSWORD=shop-service
+      - PAYMENT_CLIENT_HOST=payment-service
+      - PAYMENT_CLIENT_PORT=8088
+      - spring.data.redis.host=shop-service-cache
+      - spring.data.redis.port=6379
+
+  shop-service-db:
+    image: postgres:15
+    container_name: shop-service-db-container
+    volumes:
+      - /var/lib/postgresql/data/
+    ports:
+      - 6541:5432
+    environment:
+      - POSTGRES_DB=shop-service
+      - POSTGRES_USER=shop-service
+      - POSTGRES_PASSWORD=shop-service
+
+  store-showcase-cache:
+    image: redis:7.4.2-bookworm
+    ports:
+      - '6379:6379'
