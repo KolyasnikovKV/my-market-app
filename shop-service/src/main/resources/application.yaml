@@ -32,6 +32,8 @@ spring:
   thymeleaf:
     check-template-location: true
     cache: false
+  jpa:
+    show-sql: true
 
 logging:
   level:

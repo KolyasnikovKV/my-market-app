@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.result.view.Rendering;
 import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Mono;
+import yandex.practicum.market.dto.ItemDto;
 import yandex.practicum.market.service.ItemOperationService;
 import yandex.practicum.market.service.ItemService;
 import yandex.practicum.market.types.SortType;
@@ -62,10 +63,13 @@ public class ItemController {
             WebSession session
     ) {
         return Mono.just(session.getId()) // Получаем ID сессии
-                .flatMap(sessionId ->
-                        itemOperationService.getItem(id, sessionId) // Реактивный вызов сервиса
+                .flatMap(sessionId ->{
+                        Mono<String> result = itemOperationService.getItem(id, sessionId) // Реактивный вызов сервиса
                                 .doOnNext(itemDto -> model.addAttribute("item", itemDto)) // Добавляем в модель
-                                .thenReturn("item") // Возвращаем имя шаблона
+                                .doOnNext(itemDto -> model.addAttribute("item", itemDto)) // Добавляем в модель
+                                .thenReturn("item");
+                        return result;
+                } // Возвращаем имя шаблона
                 )
                 .onErrorResume(NoSuchElementException.class, ex -> {
                     // Обработка отсутствия элемента

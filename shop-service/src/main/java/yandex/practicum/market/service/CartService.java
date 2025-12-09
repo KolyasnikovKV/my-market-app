@@ -61,7 +61,7 @@ public class CartService {
 
     public Mono<Integer> getItemCountInCartByItemId(String sessionId, Long itemId) {
         Map<Long, Integer> userCart = cart.computeIfAbsent(sessionId, k -> new HashMap<>());
-        return Mono.just(userCart.get(itemId));
+        return Mono.just(userCart.getOrDefault(itemId, 0));
     }
 
     public Flux<ItemDto> getAndResetCart(String sessionId) {
