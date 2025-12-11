@@ -28,11 +28,9 @@ public class CartController {
     @GetMapping("/cart/items")
     public Mono<Rendering> showCart(Model model, WebSession session) {
 
-        cartService.getBalance()
+        return cartService.getBalance()
                 .doOnNext(balance -> model.addAttribute("balance", balance))
-                .then();
-
-        return  cartService.getCart(session.getId())
+                .flatMapMany(balance -> cartService.getCart(session.getId()))
                 .collectList()
                 .doOnNext(items -> {
                     java.math.BigDecimal total = items.stream()
@@ -48,7 +46,6 @@ public class CartController {
                     // Логирование ошибки и возврат дефолтного Rendering
                     return Mono.just(Rendering.view("error").build());
                 });
-
     }
 
     @PostMapping("/cart/items")
