@@ -27,11 +27,12 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final PaymentApi paymentApi;
+    private final SecurityService securityService;
 
 
     public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository,
                         ItemMapper itemMapper, CartService cartService, ItemRepository itemRepository,
-                        ItemService itemService, PaymentApi paymentApi) {
+                        ItemService itemService, PaymentApi paymentApi, SecurityService securityService) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.itemMapper = itemMapper;
@@ -39,42 +40,47 @@ public class OrderService {
         this.itemRepository = itemRepository;
         this.itemService = itemService;
         this.paymentApi = paymentApi;
+        this.securityService = securityService;
     }
 
     @Transactional
-    public Mono<Long> createOrder(String sessionId) {
-        return cartService.getCartTotalSum(sessionId)
+    public Mono<Long> createOrder() {
+        return cartService.getCartTotalSum()
                 .flatMap(totalSum ->
                         paymentApi.makePayment(new PaymentRequest().sum(totalSum))
                                 .onErrorResume(error -> {
                                     return Mono.error(new PaymentException("PAYMENT_ERROR", error));
                                 })
-                                .thenMany(cartService.getAndResetCart(sessionId))
+                                .thenMany(cartService.getAndResetCart())
                                 .collectList()
                                 .flatMap(items ->
-                                        orderRepository.save(OrderEntity.builder()
-                                                        .sessionId(sessionId)
-                                                        .build())
-                                                .flatMap(order -> {
-                                                    Flux<OrderItemEntity> orderItemsFlux = Flux.fromIterable(items)
-                                                            .flatMap(item -> itemRepository.findById(item.getId())
-                                                                    .map(itemEntity -> OrderItemEntity.builder()
-                                                                            .orderId(order.getId())
-                                                                            .itemId(itemEntity.getId())
-                                                                            .count(item.getCount())
-                                                                            .build())
-                                                            );
-                                                    return orderItemsFlux.collectList()
-                                                            .flatMap(orderItemRepository::saveAll)
-                                                            .thenMany(Flux.fromIterable(items))
-                                                            .then(Mono.just(order.getId()));
-                                                })
-
+                                        securityService.getCurrentUserId()
+                                                .flatMap(userId ->
+                                                        orderRepository.save(OrderEntity.builder()
+                                                                        .userId(userId)
+                                                                        .userId(userId)
+                                                                        .build())
+                                                                .flatMap(order -> {
+                                                                    Flux<OrderItemEntity> orderItemsFlux = Flux.fromIterable(items)
+                                                                            .flatMap(item -> itemRepository.findById(item.getId())
+                                                                                    .map(itemEntity -> OrderItemEntity.builder()
+                                                                                            .orderId(order.getId())
+                                                                                            .itemId(itemEntity.getId())
+                                                                                            .count(item.getCount())
+                                                                                            .build())
+                                                                            );
+                                                                    return orderItemsFlux.collectList()
+                                                                            .flatMap(orderItemRepository::saveAll)
+                                                                            .thenMany(Flux.fromIterable(items))
+                                                                            .then(Mono.just(order.getId()));
+                                                                })
+                                                )
                                 ));
     }
 
-    public Flux<OrderDto> findOrders(String sessionId) {
-        return orderRepository.findAllBySessionIdOrderById(sessionId)
+    public Flux<OrderDto> findOrders() {
+        return securityService.getCurrentUserId()
+                .flatMapMany(orderRepository::findAllByUserId)
                 .flatMap(order -> orderItemRepository.findByOrderId(order.getId())
                         .collectList()
                         .map(items -> OrderDto.builder()
@@ -84,9 +90,10 @@ public class OrderService {
                 );
     }
 
-    public Mono<OrderDto> findOrderById(Long orderId, String sessionId) {
+    public Mono<OrderDto> findOrderById(Long orderId) {
 
-        return orderRepository.findByIdAndSessionId(orderId, sessionId)
+        return securityService.getCurrentUserId()
+                .flatMap(userId -> orderRepository.findByIdAndUserId(orderId, userId))
                 .flatMap(order -> orderItemRepository.findByOrderId(order.getId())
                         .collectList()
                         .map(items -> OrderDto.builder()

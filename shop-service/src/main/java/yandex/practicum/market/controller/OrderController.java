@@ -28,7 +28,7 @@ public class OrderController {
     @PostMapping("/buy")
     public Mono<Rendering> buyFromCart(@SessionAttribute WebSession webSession) {
 
-        return orderService.createOrder(webSession.getId())
+        return orderService.createOrder()
                 .map(orderId -> Rendering.redirectTo("/orders/" + orderId + PARAM_NEW_ORDER_IS_TRUE)
                         .build());
     }
@@ -42,7 +42,7 @@ public class OrderController {
     @GetMapping("/orders")
     public Mono<Rendering> getOrders(Model model, @SessionAttribute WebSession webSession) {
 
-        return orderService.findOrders(webSession.getId())
+        return orderService.findOrders()
                 .doOnNext(order -> System.out.println("/orders"))
                 .collectList()
                 .doOnNext(orders -> model.addAttribute("orders", orders))
@@ -66,7 +66,7 @@ public class OrderController {
             @SessionAttribute WebSession webSession
     ) {
 
-        return orderService.findOrderById(orderId, webSession.getId())
+        return orderService.findOrderById(orderId)
                 .doOnNext(order -> System.out.println("/orders"))
                 .doOnNext(order -> {
                     model.addAttribute("order", order);

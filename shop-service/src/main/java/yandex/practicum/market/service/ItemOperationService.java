@@ -23,14 +23,16 @@ public class ItemOperationService {
     private final ItemDtoFactory itemDtoFactory;
     private final CartService cartService;
     private final ItemService itemService;
+    private final SecurityService securityService;
 
-    public ItemOperationService(ItemDtoFactory itemDtoFactory, CartService cartService, ItemService itemService) {
+    public ItemOperationService(ItemDtoFactory itemDtoFactory, CartService cartService, ItemService itemService, SecurityService securityService) {
         this.itemDtoFactory = itemDtoFactory;
         this.cartService = cartService;
         this.itemService = itemService;
+        this.securityService = securityService;
     }
 
-    public List<List<ItemDto>> getListOfListItemDto(String sessionId, List<ItemEntity> items) {
+    public List<List<ItemDto>> getListOfListItemDto(Long userId, List<ItemEntity> items) {
 
         List<List<ItemDto>> listOfListItemDto  = new LinkedList<>();
 
@@ -40,7 +42,7 @@ public class ItemOperationService {
 
         for (ItemEntity item : items) {
             Integer quantity = 0;
-            Optional<Integer> cartItemOptional = cartService.getItemCountInCartByItemId(sessionId, item.getId()).blockOptional();
+            Optional<Integer> cartItemOptional = cartService.getItemCountInCartByItemId(userId, item.getId()).blockOptional();
             if (cartItemOptional.isPresent()) {
                 quantity = cartItemOptional.get();
             }
@@ -61,7 +63,7 @@ public class ItemOperationService {
     public Mono<ItemDto> getItem(Long id, String sessionId) {
         return itemService.getItem(id) // Возвращает Mono<ItemEntity>
                 .zipWith(
-                        cartService.getItemCountInCartByItemId(sessionId, id),
+                        cartService.getItemCountInCartByItemId(securityService.getCurrentUserId().block(), id),
                         (item, cartCount) -> itemDtoFactory.of(item, cartCount)
                 );
 

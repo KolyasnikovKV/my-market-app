@@ -3,6 +3,7 @@ package yandex.practicum.market.integration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 import yandex.practicum.market.BaseIntegrationTest;
 import yandex.practicum.market.entity.ItemEntity;
@@ -20,7 +21,10 @@ class MainControllerTest extends BaseIntegrationTest {
     private ItemRepository itemRepository;
 
     @Test
+    @WithMockUser
     void getMainPage_shouldReturnHtmlWithMainTest() {
+
+        itemRepository.save(new ItemEntity(3L,"","", "", BigDecimal.ONE)).block();
         webTestClient
                 .get()
                 .uri(uriBuilder -> uriBuilder.path("/items")
@@ -38,12 +42,13 @@ class MainControllerTest extends BaseIntegrationTest {
     }
 
     @Test
+    @WithMockUser
     void getItemDtoById_Cache() {
 
-        itemRepository.save(new ItemEntity(3L,"","", "", BigDecimal.ONE));
+        itemRepository.save(new ItemEntity(null,"Item1","Description1", "1", BigDecimal.ONE)).block();
 
         webTestClient.get()
-                .uri("/items/3")
+                .uri("/items/1")
                 .exchange()
                 .expectStatus().isOk();
     }

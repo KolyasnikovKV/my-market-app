@@ -10,6 +10,7 @@ import reactor.core.publisher.Mono;
 import yandex.practicum.market.dto.ItemDto;
 import yandex.practicum.market.service.ItemOperationService;
 import yandex.practicum.market.service.ItemService;
+import yandex.practicum.market.service.SecurityService;
 import yandex.practicum.market.types.SortType;
 import yandex.practicum.market.dto.PagingDto;
 
@@ -20,10 +21,12 @@ public class ItemController {
 
     private final ItemService itemService;
     private final ItemOperationService itemOperationService;
+    private final SecurityService securityService;
 
-    public ItemController(ItemService itemService, ItemOperationService itemOperationService) {
+    public ItemController(ItemService itemService, ItemOperationService itemOperationService, SecurityService securityService) {
         this.itemService = itemService;
         this.itemOperationService = itemOperationService;
+        this.securityService = securityService;
     }
 
 
@@ -42,7 +45,7 @@ public class ItemController {
         return itemService.getItems(searchTerm, sortType, pageSize, pageNumber)
                 .collectList()
                 .doOnNext(items -> {
-                    itemOperationService.getListOfListItemDto(sessionId, items);
+                    itemOperationService.getListOfListItemDto(securityService.getCurrentUserId().block(), items);
                     model.addAttribute("items", items);
                     model.addAttribute("search", searchTerm);
                     model.addAttribute("sort", sortType);

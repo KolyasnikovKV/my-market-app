@@ -4,6 +4,11 @@ server:
 spring:
   application:
     name: payment-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${OAUTH2_SERVER:http://localhost:8080/realms/shop}
 
 service:
   default-balance: ${DEFAULT_BALANCE:5000}

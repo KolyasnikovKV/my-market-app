@@ -12,7 +12,7 @@ services:
     restart: on-failure
     environment:
       - DEFAULT_BALANCE=3000
-      - OAUTH2_SERVER=http://keycloak:8080/realms/intershop
+      - OAUTH2_SERVER=http://keycloak:8080/realms/shop
 
   shop-service:
     build: shop-service
@@ -23,6 +23,7 @@ services:
     depends_on:
       - shop-service-db
       - shop-service-cache
+      - keycloak
     restart: on-failure
     environment:
       - SPRING_DATASOURCE_R2DBC_URL=r2dbc:postgresql://shop-service-db:5432/shop-service
@@ -33,6 +34,7 @@ services:
       - PAYMENT_CLIENT_PORT=8088
       - spring.data.redis.host=shop-service-cache
       - spring.data.redis.port=6379
+      - OAUTH2_SERVER=http://keycloak:8080/realms/shop
 
   shop-service-db:
     image: postgres:15
@@ -50,3 +52,22 @@ services:
     image: redis:7.4.2-bookworm
     ports:
       - '6379:6379'
+      -
+  keycloak:
+    image: quay.io/keycloak/keycloak:21.1.1
+    environment:
+      KC_DB: dev-mem
+      KC_LOG_LEVEL: INFO
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_IMPORT: "true"
+      KC_IMPORT_REALM: /opt/keycloak/realm-shop.json
+    volumes:
+      - ./keycloak/realm-shop.json:/opt/keycloak/data/import/realm-shop.json:ro
+    command:
+      - start-dev
+      - --import-realm
+    ports:
+      - '8080:8080'
