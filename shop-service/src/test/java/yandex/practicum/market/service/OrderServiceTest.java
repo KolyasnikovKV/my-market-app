@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -59,7 +60,11 @@ class OrderServiceTest {
     @Mock
     private PaymentApi paymentApi;
 
+    @Mock
+    private SecurityService securityService;
+
     @Test
+    @WithMockUser
     void createOrderTest() {
         // given
         ItemDto item1 = ItemDto.builder()
@@ -78,17 +83,18 @@ class OrderServiceTest {
 
         // mocks
         when(paymentApi.makePayment(any())).thenReturn(Mono.empty());
-        when(cartService.getCartTotalSum(anyString())).thenReturn(Mono.just(BigDecimal.TEN));
-        when(cartService.getAndResetCart(anyString())).thenReturn(Flux.just(item1, item2));
+        when(cartService.getCartTotalSum()).thenReturn(Mono.just(BigDecimal.TEN));
+        when(cartService.getAndResetCart()).thenReturn(Flux.just(item1, item2));
         when(orderRepository.save(any(OrderEntity.class)))
                 .thenReturn(Mono.just(savedOrder));
         when(orderItemRepository.saveAll(anyList()))
                 .thenReturn(Mono.empty());
         when(itemRepository.findById(1L)).thenReturn(Mono.just(itemEntity1));
         when(itemRepository.findById(2L)).thenReturn(Mono.just(itemEntity2));
+        when(securityService.getCurrentUserId()).thenReturn(Mono.just(1L));
 
         // when
-        Mono<Long> result = orderService.createOrder("session");
+        Mono<Long> result = orderService.createOrder();
 
         // then
         StepVerifier.create(result)

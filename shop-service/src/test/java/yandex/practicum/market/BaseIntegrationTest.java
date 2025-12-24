@@ -7,13 +7,18 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.context.ImportTestcontainers;
 import org.springframework.context.annotation.Import;
 import org.springframework.r2dbc.core.DatabaseClient;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import yandex.practicum.market.configuration.SecurityConfiguration;
 
 @Testcontainers
+@Import(SecurityConfiguration.class)
 @ImportTestcontainers({PostreSqlTestcontainer.class, RedisTestcontainer.class})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class BaseIntegrationTest {
@@ -24,6 +29,12 @@ public class BaseIntegrationTest {
     @Autowired
     protected DatabaseClient databaseClient;
 
+    @MockitoBean
+    private ReactiveClientRegistrationRepository clientRegistrationRepository;
+
+    @MockitoBean
+    private ReactiveOAuth2AuthorizedClientService authorizedClientService;
+
     @BeforeEach
     void setUp() {
         databaseClient.sql("""
@@ -32,6 +43,11 @@ public class BaseIntegrationTest {
                         TRUNCATE TABLE items CASCADE;
                         """).then()
                 .block();
+    }
+
+    @AfterEach
+    public void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
     }
 
     @DynamicPropertySource

@@ -30,7 +30,7 @@ public class CartController {
 
         return cartService.getBalance()
                 .doOnNext(balance -> model.addAttribute("balance", balance))
-                .flatMapMany(balance -> cartService.getCart(session.getId()))
+                .flatMapMany(balance -> cartService.getCart())
                 .collectList()
                 .doOnNext(items -> {
                     java.math.BigDecimal total = items.stream()
@@ -55,7 +55,7 @@ public class CartController {
             WebSession session
     ) {
 
-        return cartService.changeItemCountInCartByItemId(session.getId(), itemId, action)
+        return cartService.changeItemCountInCartByItemId(itemId, action)
                 .thenReturn(Rendering.redirectTo("/cart/items")
                         .build());
     }

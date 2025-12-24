@@ -9,7 +9,7 @@ import yandex.practicum.market.entity.OrderEntity;
 @Repository
 public interface OrderRepository extends R2dbcRepository<OrderEntity, Long> {
 
-    Flux<OrderEntity> findAllBySessionIdOrderById(String sessionId);
+    Flux<OrderEntity> findAllByUserId(Long userId);
 
-    Mono<OrderEntity> findByIdAndSessionId(Long id, String sessionId);
+    Mono<OrderEntity> findByIdAndUserId(Long id, Long userId);
 }

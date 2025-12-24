@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithMockUser;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -44,7 +45,11 @@ public class OrderItemServiceTest {
     @Mock
     private OrderRepository orderRepository;
 
+    @Mock
+    private SecurityService securityService;
+
     @Test
+    @WithMockUser
     void findAllByOrderIdTest() {
         //given
         OrderEntity order = OrderEntity.builder().id(1L).build();
@@ -53,11 +58,12 @@ public class OrderItemServiceTest {
 
         //mock
         when(orderItemRepository.findAll()).thenReturn(Flux.just(item1, item2));
-        when(orderRepository.findByIdAndSessionId(anyLong(), anyString())).thenReturn(Mono.just(order));
+        when(orderRepository.findByIdAndUserId(anyLong(), anyLong())).thenReturn(Mono.just(order));
         when(orderItemRepository.findByOrderId(anyLong())).thenReturn(Flux.just(item1, item2));
+        when(securityService.getCurrentUserId()).thenReturn(Mono.just(1L));
 
         //when
-        Mono<OrderDto> result = orderService.findOrderById(order.getId(), "1");
+        Mono<OrderDto> result = orderService.findOrderById(order.getId());
 
         //then
         StepVerifier.create(result)

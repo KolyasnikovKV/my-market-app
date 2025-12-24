@@ -10,6 +10,7 @@ import reactor.core.publisher.Mono;
 import yandex.practicum.market.dto.ItemDto;
 import yandex.practicum.market.service.ItemOperationService;
 import yandex.practicum.market.service.ItemService;
+import yandex.practicum.market.service.SecurityService;
 import yandex.practicum.market.types.SortType;
 import yandex.practicum.market.dto.PagingDto;
 
@@ -20,10 +21,12 @@ public class ItemController {
 
     private final ItemService itemService;
     private final ItemOperationService itemOperationService;
+    private final SecurityService securityService;
 
-    public ItemController(ItemService itemService, ItemOperationService itemOperationService) {
+    public ItemController(ItemService itemService, ItemOperationService itemOperationService, SecurityService securityService) {
         this.itemService = itemService;
         this.itemOperationService = itemOperationService;
+        this.securityService = securityService;
     }
 
 
@@ -41,16 +44,17 @@ public class ItemController {
         String sessionId = webSession.getId();
         return itemService.getItems(searchTerm, sortType, pageSize, pageNumber)
                 .collectList()
-                .doOnNext(items -> {
-                    itemOperationService.getListOfListItemDto(sessionId, items);
-                    model.addAttribute("items", items);
+                .zipWith(securityService.getCurrentUserId())
+                .doOnNext((tuple) -> {
+                    itemOperationService.getListOfListItemDto(tuple.getT2(), tuple.getT1());
+                    model.addAttribute("items", tuple.getT1());
                     model.addAttribute("search", searchTerm);
                     model.addAttribute("sort", sortType);
                     model.addAttribute("paging",
                             new PagingDto(pageNumber,
                                     pageSize,
-                                    (pageNumber - 1) * pageSize < items.size(),
-                                    (pageNumber - 1) * pageSize > items.size()));
+                                    (pageNumber - 1) * pageSize < tuple.getT1().size(),
+                                    (pageNumber - 1) * pageSize > tuple.getT1().size()));
                 })
                 .thenReturn(Rendering.view("main")
                 .build());

@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@Import({ItemService.class,ItemMapper.class})
+@Import({ItemService.class,ItemMapper.class, SecurityService.class})
 @MockitoSettings(strictness = Strictness.LENIENT)
 class CartServiceImplTest {
 
@@ -53,6 +54,9 @@ class CartServiceImplTest {
     @Mock
     private WebSession session;
 
+    @Mock
+    private SecurityService securityService;
+
     private static final String USERNAME = "john";
     private static final String PRINCIPAL_KEY = "PRINCIPAL";
     private static String cartKey(String username) {
@@ -60,6 +64,7 @@ class CartServiceImplTest {
     }
 
     @Test
+    @WithMockUser
     void getCartItemsTest() {
         // given
         Map<String, Object> attributes = new HashMap<>();
@@ -72,18 +77,20 @@ class CartServiceImplTest {
         ItemEntity item1 = ItemEntity.builder().id(1L).title("Item 1").build();
         ItemEntity item2 = ItemEntity.builder().id(2L).title("Item 2").build();
 
-        cartService.changeItemCountInCartByItemId("1", 1L, ActionType.PLUS);
-        cartService.changeItemCountInCartByItemId("1", 2L, ActionType.PLUS);
-
         // mock
         when(session.getAttributes()).thenReturn(attributes);
+        when(securityService.getCurrentUserId()).thenReturn(Mono.just(1L));
         when(itemRepository.findById(1L)).thenReturn(Mono.just(item1));
         when(itemRepository.findById(2L)).thenReturn(Mono.just(item2));
         when(itemRepository.findAllById(anyList())).thenReturn(Flux.just(item1, item2));
         when(itemService.findAllItemsByIds(any())).thenReturn(Flux.just(itemMapper.toItemDto(item1), itemMapper.toItemDto(item2)));
 
-        // when
-        Mono<List<ItemDto>> result = cartService.getCart("1").collectList();
+
+        cartService.changeItemCountInCartByItemId( 1L, ActionType.PLUS).block();
+        cartService.changeItemCountInCartByItemId( 2L, ActionType.PLUS).block();
+
+          // when
+        Mono<List<ItemDto>> result = cartService.getCart().collectList();
 
         // then
         StepVerifier.create(result)
@@ -97,10 +104,8 @@ class CartServiceImplTest {
     }
 
     @Test
+    @WithMockUser
     void getTotalPriceTest() {
-        // given
-        cartService.changeItemCountInCartByItemId("1", 1L, ActionType.PLUS);
-        cartService.changeItemCountInCartByItemId("1", 2L, ActionType.PLUS);
 
         ItemEntity item1 = ItemEntity.builder().id(1L).price(BigDecimal.valueOf(10)).build(); // 2 * 10
         ItemEntity item2 = ItemEntity.builder().id(2L).price(BigDecimal.valueOf(30)).build(); // 1 * 30
@@ -112,9 +117,14 @@ class CartServiceImplTest {
         when(itemRepository.findById(2L)).thenReturn(Mono.just(item2));
         when(itemRepository.findAllById(anyList())).thenReturn(Flux.just(item1, item2));
         when(itemService.findAllItemsByIds(any())).thenReturn(Flux.just(itemMapper.toItemDto(item1), itemMapper.toItemDto(item2)));
+        when(securityService.getCurrentUserId()).thenReturn(Mono.just(1L));
+
+        // given
+        cartService.changeItemCountInCartByItemId( 1L, ActionType.PLUS).block();
+        cartService.changeItemCountInCartByItemId( 2L, ActionType.PLUS).block();
 
         // when
-        Mono<BigDecimal> result = cartService.getCartTotalSum("1");
+        Mono<BigDecimal> result = cartService.getCartTotalSum();
 
         // then
         StepVerifier.create(result)
