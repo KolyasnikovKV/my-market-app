@@ -44,16 +44,17 @@ public class ItemController {
         String sessionId = webSession.getId();
         return itemService.getItems(searchTerm, sortType, pageSize, pageNumber)
                 .collectList()
-                .doOnNext(items -> {
-                    itemOperationService.getListOfListItemDto(securityService.getCurrentUserId().block(), items);
-                    model.addAttribute("items", items);
+                .zipWith(securityService.getCurrentUserId())
+                .doOnNext((tuple) -> {
+                    itemOperationService.getListOfListItemDto(tuple.getT2(), tuple.getT1());
+                    model.addAttribute("items", tuple.getT1());
                     model.addAttribute("search", searchTerm);
                     model.addAttribute("sort", sortType);
                     model.addAttribute("paging",
                             new PagingDto(pageNumber,
                                     pageSize,
-                                    (pageNumber - 1) * pageSize < items.size(),
-                                    (pageNumber - 1) * pageSize > items.size()));
+                                    (pageNumber - 1) * pageSize < tuple.getT1().size(),
+                                    (pageNumber - 1) * pageSize > tuple.getT1().size()));
                 })
                 .thenReturn(Rendering.view("main")
                 .build());

@@ -24,7 +24,7 @@ class MainControllerTest extends BaseIntegrationTest {
     @WithMockUser
     void getMainPage_shouldReturnHtmlWithMainTest() {
 
-        itemRepository.save(new ItemEntity(3L,"","", "", BigDecimal.ONE)).block();
+        itemRepository.save(new ItemEntity(null,"Item1","Description1", "1", BigDecimal.ONE)).then();
         webTestClient
                 .get()
                 .uri(uriBuilder -> uriBuilder.path("/items")
@@ -45,7 +45,7 @@ class MainControllerTest extends BaseIntegrationTest {
     @WithMockUser
     void getItemDtoById_Cache() {
 
-        itemRepository.save(new ItemEntity(null,"Item1","Description1", "1", BigDecimal.ONE)).block();
+        itemRepository.save(new ItemEntity(null,"Item1","Description1", "1", BigDecimal.ONE)).then();
 
         webTestClient.get()
                 .uri("/items/1")
